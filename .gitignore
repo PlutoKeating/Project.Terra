@@ -13,3 +13,4 @@ node_modules/
 .mimocode/
 data/
 .DS_Store
+skills-lock.json
