@@ -2,7 +2,7 @@
 
 # Terra
 
-_A design medium for systems architecture — visual canvas, engineering precision._
+_面向系统架构的设计媒介 — 可视化画布，工程级精度。_
 
 [![Phase](https://img.shields.io/badge/phase-backend%20complete-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![Python](https://img.shields.io/badge/python-3.11+-blue?style=flat-square)](https://python.org)
@@ -10,22 +10,22 @@ _A design medium for systems architecture — visual canvas, engineering precisi
 [![Tests](https://img.shields.io/badge/tests-64%2F64%20passing-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
-[Overview](#overview) • [Features](#features) • [Getting Started](#getting-started) • [Usage](#usage) • [Architecture](#architecture) • [Roadmap](#roadmap)
+[概述](#概述) • [功能特性](#功能特性) • [快速开始](#快速开始) • [使用示例](#使用示例) • [架构设计](#架构设计) • [路线图](#路线图)
 
 </div>
 
-## Overview
+## 概述
 
-Every engineer has hit the same wall: **pseudo-code describes what happens inside one module, and architecture diagrams show what modules exist. Neither tells you how module A calls module B, under what conditions, with what protocol, carrying what data, and triggering what behavior in module C.**
+每个工程师都撞过同一堵墙：**伪代码能描述单个模块内部的执行流程，架构图能呈现系统由哪些模块组成。但两者都无法精确表达"模块 A 在何种条件下、通过何种协议、携载何种数据、触发模块 C 的何种行为"这类工程化细节。**
 
-Existing tools force you to choose:
+现有工具迫使你二选一：
 
-| Tool | You get | You lose |
+| 工具 | 你得到了 | 你失去了 |
 |------|---------|----------|
-| Excalidraw, draw.io | Visual intuition, free-form expression | Semantic precision. It's just colored boxes. |
-| Mermaid, PlantUML | Machine-readable, version-controllable specs | Visual editing. You're coding your diagrams. |
+| Excalidraw, draw.io | 直观的可视化表达，自由布局 | 语义精度。它只是涂了颜色的方框。 |
+| Mermaid, PlantUML | 机器可读、可版本控制的规格 | 可视化编辑的直观性。你在用代码画图。 |
 
-**Terra** fills this gap. It is not a diagramming tool and not a code generator — it is a **visual architecture description language**: every element on the canvas carries typed, structured metadata that a machine can read, validate, and trace to implementation.
+**Terra** 填补了这个空白。它不是绘图工具，也不是代码生成器——它是一种**可视化架构描述语言**：画布上的每一个元素都携带着带类型的、结构化的元数据，机器可以读取、验证，并追溯到具体实现。
 
 ```
     ┌──────────┐    sync / http_rest / {order_id, items}    ┌──────────────┐
@@ -40,39 +40,39 @@ Existing tools force you to choose:
     └──────────┘
 ```
 
-A connection in Terra is not just a line — **it is a typed API contract** with communication mode, wire protocol, data carrier schema, and validation rules.
+Terra 中的连线不只是一条线——**它是一份带类型的 API 契约**，包含通信模式、传输协议、数据载体 schema 和验证规则。
 
-## Features
+## 功能特性
 
-### Now
+### 已实现
 
-- **6 node types** across the full stack: service, database, cache, queue, external API, infrastructure
-- **5 communication modes**: sync request-response, async message, one-way notification, publish-subscribe, event broadcast
-- **8 wire protocols**: HTTP REST, gRPC, GraphQL, WebSocket, AMQP, Kafka, database, custom
-- **Typed data carriers** with inline JSON Schema, Protobuf refs, or GraphQL types
-- **Validation engine**: cycle detection, orphan nodes, protocol consistency, completeness checks
-- **Git-native persistence**: YAML-based storage format — diff, merge, and code-review your architecture
-- **Headless REST API** with auto-generated Swagger docs (FastAPI)
-- **YAML ⇄ API roundtrip**: create from YAML, edit via API, export back to YAML
+- **6 种节点类型**覆盖全栈技术组件：服务、数据库、缓存、消息队列、外部 API、基础设施
+- **5 种通信模式**：同步请求-响应、异步消息、单向通知、发布-订阅、事件广播
+- **8 种传输协议**：HTTP REST、gRPC、GraphQL、WebSocket、AMQP、Kafka、数据库协议、自定义
+- **带类型的数据载体**：内联 JSON Schema、Protobuf 引用、GraphQL 类型
+- **验证引擎**：循环依赖检测、孤立节点、协议兼容性、完整性校验
+- **Git 原生持久化**：基于 YAML 的存储格式——可 diff、可合并、可代码审查你的架构
+- **Headless REST API**：自动生成 Swagger 文档（FastAPI）
+- **YAML ⇄ API 双向转换**：从 YAML 创建，通过 API 编辑，导出回 YAML
 
-### Planned
+### 规划中
 
-| Phase | Milestone |
-|-------|-----------|
-| P2 | Web canvas editor — drag, connect, and edit in the browser |
-| P3 | ADR anchoring — attach design decisions to any node or connection |
-| P4 | C4 layered views — drill from system context down to component level |
-| P5 | Code generation — OpenAPI, asyncAPI, DB schemas from your design |
-| P6 | Reverse sync — import Swagger/GraphQL/Protobuf back into the canvas |
-| P7 | Collaboration & plugins — real-time editing, custom node types, CI/CD integration |
+| 阶段 | 里程碑 |
+|------|--------|
+| P2 | Web 画布编辑器——在浏览器中拖拽、连接和编辑 |
+| P3 | ADR 决策锚定——将设计决策附加到任意节点或连线 |
+| P4 | C4 分层视图——从系统上下文下钻到组件级别 |
+| P5 | 代码生成——从设计生成 OpenAPI、AsyncAPI、数据库 schema |
+| P6 | 反向同步——将 Swagger/GraphQL/Protobuf 导回画布 |
+| P7 | 协作与插件——实时编辑、自定义节点类型、CI/CD 集成 |
 
-## Getting Started
+## 快速开始
 
-### Prerequisites
+### 前置要求
 
-- Python 3.11 or later
+- Python 3.11 或更高版本
 
-### 1. Clone and install
+### 1. 克隆并安装
 
 ```bash
 git clone https://github.com/your-org/terra.git
@@ -83,34 +83,34 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Start the engine
+### 2. 启动引擎
 
 ```bash
 uvicorn terra_engine.main:app --reload --port 8000
 ```
 
-Open **http://localhost:8000/docs** — you now have a live Swagger playground for the full API.
+打开 **http://localhost:8000/docs** — 你现在拥有了一个完整的 Swagger 交互式 API 调试环境。
 
-### 3. Run the tests
+### 3. 运行测试
 
 ```bash
 pytest tests/ -v
 ```
 
 > [!TIP]
-> The test suite covers 64 scenarios across models, validators, services, and the full REST API. Use it as a reference for how the engine behaves.
+> 测试套件覆盖了 64 个场景，涵盖模型、验证器、服务和完整的 REST API。可以将其作为理解引擎行为的参考。
 
-## Usage
+## 使用示例
 
-### 30-second API walkthrough
+### 30 秒 API 快速上手
 
 ```bash
-# Create a project
+# 创建项目
 curl -X POST http://localhost:8000/api/v1/projects \
   -H "Content-Type: application/json" \
-  -d '{"name": "E-Commerce Platform"}'
+  -d '{"name": "电商平台"}'
 
-# Add a service node
+# 添加服务节点
 curl -X POST http://localhost:8000/api/v1/projects/{id}/nodes \
   -H "Content-Type: application/json" \
   -d '{
@@ -119,7 +119,7 @@ curl -X POST http://localhost:8000/api/v1/projects/{id}/nodes \
     "position": {"x": 300, "y": 140}
   }'
 
-# Add a database node
+# 添加数据库节点
 curl -X POST http://localhost:8000/api/v1/projects/{id}/nodes \
   -H "Content-Type: application/json" \
   -d '{
@@ -129,7 +129,7 @@ curl -X POST http://localhost:8000/api/v1/projects/{id}/nodes \
     "properties": {"engine": "PostgreSQL", "version": "16"}
   }'
 
-# Connect them with a typed contract
+# 用带类型的契约连接它们
 curl -X POST http://localhost:8000/api/v1/projects/{id}/connections \
   -H "Content-Type: application/json" \
   -d '{
@@ -137,22 +137,22 @@ curl -X POST http://localhost:8000/api/v1/projects/{id}/connections \
     "target_node_id": "<db-id>",
     "mode": "sync_request_response",
     "protocol": "database",
-    "description": "Order persistence"
+    "description": "订单持久化读写"
   }'
 
-# Validate your design
+# 验证你的设计
 curl -X POST http://localhost:8000/api/v1/projects/{id}/validate
 
-# Export as YAML (git-diff friendly, shareable)
+# 导出 YAML（Git 可 diff，便于分享）
 curl http://localhost:8000/api/v1/projects/{id}/export?format=yaml
 ```
 
-### Validation in action
+### 实战验证
 
-Create a circular dependency and catch it:
+创建循环依赖并即时捕获：
 
 ```bash
-# Add a back-channel connection that creates a cycle
+# 添加一条反向连接，制造环路
 curl -X POST .../connections -d '{
   "source_node_id": "<order-service>",
   "target_node_id": "<api-gateway>",
@@ -160,88 +160,88 @@ curl -X POST .../connections -d '{
   "protocol": "http_rest"
 }'
 
-# Validation catches it
+# 验证引擎立即捕获
 curl -X POST .../validate
 # → [{ "rule": "cycle_detector", "severity": "error",
 #      "message": "循环依赖: API Gateway → Order Service → API Gateway" }]
 ```
 
-## Architecture
+## 架构设计
 
 ```
 ┌───────────────────────────────────────────────────┐
-│              Web UI (Phase 2)                      │
-│  Canvas Editor  │  Property Panel  │  Navigation   │
+│              Web UI（Phase 2）                     │
+│  画布编辑器  │  属性面板  │  导航                   │
 └─────────────────────┬─────────────────────────────┘
                       │  REST + Swagger
 ┌─────────────────────▼─────────────────────────────┐
-│            Terra Engine (FastAPI)                  │
+│            Terra Engine（FastAPI）                  │
 │                                                    │
 │  ┌──────────┐  ┌──────────┐  ┌────────────────┐   │
 │  │  Models  │  │ Services │  │   Validators   │   │
-│  │ (Pydantic)│  │  (CRUD)  │  │   (4 rules)    │   │
+│  │ (Pydantic)│  │  (CRUD)  │  │   (4 条规则)   │   │
 │  └──────────┘  └──────────┘  └────────────────┘   │
 │                      │                             │
 │  ┌───────────────────▼─────────────────────────┐   │
-│  │         YAML Persistence Layer              │   │
-│  │   .terra.yaml  ←  diff-friendly  →  Git    │   │
+│  │         YAML 持久化层                        │   │
+│  │   .terra.yaml  ←  可 diff  →  Git          │   │
 │  └─────────────────────────────────────────────┘   │
 └────────────────────────────────────────────────────┘
 ```
 
-The backend is a layered FastAPI application:
+后端采用分层的 FastAPI 架构：
 
-- **API Layer** — RESTful routes with auto-generated OpenAPI docs
-- **Service Layer** — business logic for project/node/connection CRUD, validation orchestration, YAML import/export
-- **Model Layer** — Pydantic models with strict typing for all domain entities
-- **Validation Layer** — pluggable rule engine (4 rules, extensible)
+- **API 层** — RESTful 路由，自动生成 OpenAPI 文档
+- **Service 层** — 项目/节点/连线 CRUD 业务逻辑、验证编排、YAML 导入导出
+- **Model 层** — Pydantic 模型，对全部领域实体进行严格类型约束
+- **Validation 层** — 可插拔规则引擎（4 条规则，可扩展）
 
-## Project Structure
+## 项目结构
 
 ```
 terra/
-├── backend/                    # FastAPI headless engine (Phase 1)
+├── backend/                    # FastAPI Headless 引擎（Phase 1）
 │   ├── terra_engine/
-│   │   ├── models/             # Pydantic data models & enums
-│   │   ├── services/           # Business logic & YAML persistence
-│   │   ├── validators/         # Pluggable validation rules (4)
-│   │   ├── api/                # REST route handlers
-│   │   └── main.py             # App entry point
-│   └── tests/                  # 64 unit + integration tests
-├── frontend/                   # Web canvas editor (Phase 2)
+│   │   ├── models/             # Pydantic 数据模型与枚举
+│   │   ├── services/           # 业务逻辑与 YAML 持久化
+│   │   ├── validators/         # 可插拔验证规则（4 条）
+│   │   ├── api/                # REST 路由处理
+│   │   └── main.py             # 应用入口
+│   └── tests/                  # 64 个单元与集成测试
+├── frontend/                   # Web 画布编辑器（Phase 2）
 ├── docs/
-│   ├── API.md                  # Quick API reference
-│   ├── FRONTEND_REQUIREMENT.md # Complete frontend spec + API docs
-│   └── compose/specs/          # Design specs
-└── scripts/                    # Shared scripts
+│   ├── API.md                  # API 快速参考
+│   ├── FRONTEND_REQUIREMENT.md # 完整前端规格 + API 文档
+│   └── compose/specs/          # 设计规格文档
+└── scripts/                    # 共享脚本
 ```
 
-## Documentation
+## 文档
 
-| Document | Audience | Content |
-|----------|----------|---------|
-| [`docs/API.md`](docs/API.md) | Backend developers | Quick API reference |
-| [`docs/FRONTEND_REQUIREMENT.md`](docs/FRONTEND_REQUIREMENT.md) | Frontend developers | Complete functional spec with full API reference (19 endpoints) |
-| [`docs/original-vision.md`](docs/原始问题背景与功能需求定义.md) | Everyone | Original problem statement and vision (Chinese) |
-| [`docs/compose/specs/`](docs/compose/specs/) | Architects | Design specifications |
-| http://localhost:8000/docs | Everyone | Interactive Swagger playground |
+| 文档 | 面向读者 | 内容 |
+|------|---------|------|
+| [`docs/API.md`](docs/API.md) | 后端开发者 | API 快速参考 |
+| [`docs/FRONTEND_REQUIREMENT.md`](docs/FRONTEND_REQUIREMENT.md) | 前端开发者 | 完整功能规格及全部 API 参考（19 个端点） |
+| [`docs/原始问题背景与功能需求定义.md`](docs/原始问题背景与功能需求定义.md) | 所有人 | 原始问题陈述与产品愿景 |
+| [`docs/compose/specs/`](docs/compose/specs/) | 架构师 | 设计规格文档 |
+| http://localhost:8000/docs | 所有人 | 交互式 Swagger 调试环境 |
 
-## Roadmap
+## 路线图
 
-| Phase | Status | Deliverable |
-|-------|--------|-------------|
-| P1 | ✅ Complete | Backend engine: data model, CRUD API, validation, YAML persistence, Swagger |
-| P2 | ▶ Next | Web canvas editor with node/connection editing |
-| P3 | Planned | Validation UI + Architecture Decision Records |
-| P4 | Planned | C4 layered views + 200+ node canvas performance |
-| P5 | Planned | Code generation (OpenAPI/AsyncAPI/DB schemas) + reverse sync |
-| P6 | Planned | Multi-user collaboration + import/export ecosystem + VS Code extension |
-| P7 | Planned | Plugin system + advanced logic flows (sagas, retry policies, timing constraints) |
+| 阶段 | 状态 | 交付内容 |
+|------|------|---------|
+| P1 | ✅ 已完成 | 后端引擎：数据模型、CRUD API、验证引擎、YAML 持久化、Swagger |
+| P2 | ▶ 下一阶段 | Web 画布编辑器，支持节点和连线编辑 |
+| P3 | 规划中 | 验证结果可视化 + 架构决策记录（ADR） |
+| P4 | 规划中 | C4 分层视图 + 200+ 节点画布性能优化 |
+| P5 | 规划中 | 代码生成（OpenAPI/AsyncAPI/数据库 schema）+ 反向同步 |
+| P6 | 规划中 | 多人协作 + 导入导出生态 + VS Code 插件 |
+| P7 | 规划中 | 插件系统 + 高级逻辑流（Saga、重试策略、时序约束） |
 
-## Why "Terra"?
+## 为什么叫 "Terra"？
 
-**Terra** — Latin for _earth, ground, land_.
+**Terra** — 拉丁语，意为*大地、地基、土地*。
 
-Architecture is the ground your software stands on. Every service, every database, every queue — none make sense in isolation. Terra gives you the vocabulary to describe that ground, the canvas to map it, and the tools to verify it stands on solid engineering.
+架构是软件所站立的地基。每一个服务、每一个数据库、每一个消息队列——脱离整体来看都毫无意义。Terra 为你提供描述这片地基的语言、绘制它的画布，以及验证它是否建立在坚实工程之上的工具。
 
-It is also a nod to _terraform_ — the practice of shaping land for purpose. We shape architecture for the systems we build.
+它也向 *terraform* 致敬——塑造土地以服务于目的的行为。我们塑造架构，以服务于我们构建的系统。
