@@ -38,6 +38,23 @@ class TestProjectCRUD:
         assert updated is not None
         assert updated.name == "New Name"
 
+    def test_create_with_metadata(self):
+        meta = {"isActiveWorkspace": True}
+        p = project_service.create_project("P Meta", metadata=meta)
+        fetched = project_service.get_project(p.id)
+        assert fetched is not None
+        assert fetched.metadata == meta
+
+    def test_update_with_metadata(self):
+        p = project_service.create_project("P Meta Update")
+        meta = {"isActiveWorkspace": False}
+        updated = project_service.update_project(p.id, metadata=meta)
+        assert updated is not None
+        assert updated.metadata == meta
+        fetched = project_service.get_project(p.id)
+        assert fetched is not None
+        assert fetched.metadata == meta
+
     def test_delete_project(self):
         p = project_service.create_project("To Delete")
         assert project_service.delete_project(p.id)

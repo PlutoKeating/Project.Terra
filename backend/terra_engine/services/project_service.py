@@ -40,13 +40,13 @@ def _dict_to_project(data: dict) -> Project:
     )
 
 
-def create_project(name: str, description: str | None = None, yaml_content: str | None = None) -> Project:
+def create_project(name: str, description: str | None = None, yaml_content: str | None = None, metadata: dict | None = None) -> Project:
     _ensure_data_dir()
     if yaml_content:
         data = yaml.safe_load(yaml_content)
         project = _dict_to_project(data)
     else:
-        project = Project(name=name, description=description)
+        project = Project(name=name, description=description, metadata=metadata or {})
     _save_project(project)
     return project
 
@@ -72,7 +72,7 @@ def list_projects() -> list[Project]:
     return projects
 
 
-def update_project(project_id: str, name: str | None = None, description: str | None = None) -> Project | None:
+def update_project(project_id: str, name: str | None = None, description: str | None = None, metadata: dict | None = None) -> Project | None:
     project = get_project(project_id)
     if project is None:
         return None
@@ -80,6 +80,8 @@ def update_project(project_id: str, name: str | None = None, description: str | 
         project.name = name
     if description is not None:
         project.description = description
+    if metadata is not None:
+        project.metadata = metadata
     _save_project(project)
     return project
 

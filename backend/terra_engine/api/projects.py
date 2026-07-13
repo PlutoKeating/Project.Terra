@@ -12,11 +12,13 @@ class ProjectCreateBody(BaseModel):
     name: str
     description: Optional[str] = None
     yaml_content: Optional[str] = None
+    metadata: Optional[dict] = None
 
 
 class ProjectUpdateBody(BaseModel):
     name: Optional[str] = None
     description: Optional[str] = None
+    metadata: Optional[dict] = None
 
 
 @router.post("", response_model=Project)
@@ -25,6 +27,7 @@ def create_project(body: ProjectCreateBody):
         name=body.name,
         description=body.description,
         yaml_content=body.yaml_content,
+        metadata=body.metadata,
     )
     return project
 
@@ -48,6 +51,7 @@ def update_project(project_id: str, body: ProjectUpdateBody):
         project_id=project_id,
         name=body.name,
         description=body.description,
+        metadata=body.metadata,
     )
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
