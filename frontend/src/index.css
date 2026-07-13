@@ -1,0 +1,30 @@
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-courier: "Courier Prime", Courier, monospace;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Custom retro dot background utility */
+.bg-grid-dots {
+  background-size: 24px 24px;
+  background-image: radial-gradient(#ded8e0 1.5px, transparent 1.5px);
+}
+
+body {
+  font-family: var(--font-courier);
+  margin: 0;
+  padding: 0;
+  background-color: #fdf7ff;
+  color: #1d1b20;
+}
+
+/* Disable scrollbar on primary editor canvas */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
