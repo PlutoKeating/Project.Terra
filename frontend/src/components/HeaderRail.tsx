@@ -4,8 +4,10 @@ import { Bell, Settings, User, Search, LogOut } from "lucide-react";
 import { designSystem } from "../designSystem";
 import RainbowStrip from "./RainbowStrip";
 import { apiFetch } from "../apiFetch";
+import { useAuth } from "../App";
 
 export default function HeaderRail() {
+  const { logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [designPath, setDesignPath] = React.useState<string>("/");
@@ -229,9 +231,13 @@ export default function HeaderRail() {
                   </p>
                 </div>
                 <button
-                  onClick={() => {
-                    localStorage.removeItem("terra-user-email");
-                    localStorage.removeItem("terra-user-role");
+                  onClick={async () => {
+                    try {
+                      await apiFetch("/api/v1/auth/logout", { method: "POST" });
+                    } catch (e) {
+                      console.error("Failed to delete session on backend", e);
+                    }
+                    logout();
                     setProfileMenuOpen(false);
                     navigate("/login");
                   }}

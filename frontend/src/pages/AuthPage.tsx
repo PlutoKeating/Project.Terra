@@ -2,26 +2,52 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { designSystem } from "../designSystem";
 import RainbowStrip from "../components/RainbowStrip";
+import { apiFetch } from "../apiFetch";
+import { useAuth } from "../App";
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       alert("Please enter a valid email and password.");
       return;
     }
 
-    // Save mock session locally to keep login state persistent
-    localStorage.setItem("terra-user-email", email);
-    localStorage.setItem("terra-user-role", "Architect");
-    
-    // Redirect to dashboard
-    navigate("/");
+    setLoading(true);
+    try {
+      const endpoint = isSignUp ? "/api/v1/auth/register" : "/api/v1/auth/login";
+      const res = await apiFetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.detail || "认证请求失败");
+      }
+
+      if (isSignUp) {
+        alert("注册成功！现在您可以直接登录。");
+        setIsSignUp(false);
+        setPassword("");
+      } else {
+        const data = await res.json();
+        login(data.email);
+        navigate("/");
+      }
+    } catch (err: any) {
+      alert("操作失败: " + err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -30,7 +56,6 @@ export default function AuthPage() {
       style={{ backgroundColor: designSystem.colors.surface }}
       id="auth-page-container"
     >
-      {/* Immersive centered nostalgic card */}
       <div
         className="w-full max-w-md bg-white border shadow-xl flex flex-col relative"
         style={{
@@ -39,7 +64,6 @@ export default function AuthPage() {
         }}
         id="auth-card"
       >
-        {/* Top Rainbow Banding */}
         <RainbowStrip height="10px" id="auth-top-rainbow" />
 
         <div className="p-10 flex flex-col justify-between" id="auth-card-body">
@@ -69,6 +93,7 @@ export default function AuthPage() {
               <input
                 type="email"
                 required
+                disabled={loading}
                 placeholder="name@domain.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
@@ -91,6 +116,7 @@ export default function AuthPage() {
               <input
                 type="password"
                 required
+                disabled={loading}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
@@ -104,11 +130,11 @@ export default function AuthPage() {
               />
             </div>
 
-            {/* Structured stack-stripe button */}
             <div className="pt-4" id="auth-submit-wrapper">
               <button
                 type="submit"
-                className="w-full py-4.5 border font-mono text-[11px] font-bold uppercase tracking-[0.2em] relative transition-all active:translate-y-[1px] hover:bg-gray-50/50 cursor-pointer"
+                disabled={loading}
+                className="w-full py-4.5 border font-mono text-[11px] font-bold uppercase tracking-[0.2em] relative transition-all active:translate-y-[1px] hover:bg-gray-50/50 cursor-pointer disabled:opacity-50"
                 style={{
                   borderColor: designSystem.colors.borderDark,
                   color: designSystem.colors.onSurface,
@@ -116,8 +142,7 @@ export default function AuthPage() {
                 }}
                 id="btn-auth-submit"
               >
-                {isSignUp ? "Sign Up" : "Sign In"}
-                {/* Embedded rainbow banding strip under the button to replicate exact design */}
+                {loading ? "PROCESSING..." : isSignUp ? "Sign Up" : "Sign In"}
                 <div className="absolute left-1 right-1 bottom-1 h-[4px] overflow-hidden">
                   <RainbowStrip height="4px" />
                 </div>
@@ -125,7 +150,6 @@ export default function AuthPage() {
             </div>
           </form>
 
-          {/* Bottom navigation selectors */}
           <div
             className="mt-12 pt-6 border-t border-gray-100 flex items-center justify-between font-mono text-[10px] text-gray-400"
             id="auth-bottom-links"

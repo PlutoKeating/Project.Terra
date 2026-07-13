@@ -19,8 +19,12 @@ def temp_data_dir():
 
 
 @pytest.fixture
-def client():
-    return TestClient(app)
+def client(temp_data_dir):
+    c = TestClient(app)
+    # Register and log in a default test user
+    c.post("/api/v1/auth/register", json={"email": "test@terra.io", "password": "password123"})
+    c.post("/api/v1/auth/login", json={"email": "test@terra.io", "password": "password123"})
+    return c
 
 
 @pytest.fixture

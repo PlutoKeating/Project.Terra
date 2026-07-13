@@ -6,5 +6,11 @@ export async function apiFetch(path: string, options?: RequestInit): Promise<Res
     const normalizedBase = BASE_URL.endsWith("/") ? BASE_URL.slice(0, -1) : BASE_URL;
     url = `${normalizedBase}${path.slice(7)}`;
   }
-  return fetch(url, options);
+  
+  const extendedOptions: RequestInit = {
+    ...options,
+    credentials: "include",
+  };
+  
+  return fetch(url, extendedOptions);
 }
