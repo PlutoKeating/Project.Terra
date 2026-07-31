@@ -114,7 +114,7 @@ export default function AuthPage() {
             <div className="pt-4" id="auth-submit-wrapper">
               <button
                 type="submit"
-                className="w-full py-4.5 border font-mono text-[11px] font-bold uppercase tracking-[0.2em] relative transition-all active:translate-y-[1px] hover:bg-gray-50/50 cursor-pointer"
+                className="w-full min-h-[64px] py-4 border font-mono text-[11px] leading-5 font-bold uppercase tracking-[0.2em] relative transition-all active:translate-y-[1px] hover:bg-gray-50/50 cursor-pointer"
                 style={{
                   borderColor: designSystem.colors.borderDark,
                   color: designSystem.colors.onSurface,
