@@ -7,7 +7,7 @@ _面向系统架构的设计媒介 — 可视化画布，工程级精度。_
 [![Phase](https://img.shields.io/badge/phase-P2%20MVP-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![Python](https://img.shields.io/badge/python-3.11+-blue?style=flat-square)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/api-FastAPI-009688?style=flat-square)](https://fastapi.tiangolo.com)
-[![Tests](https://img.shields.io/badge/tests-64%2F64%20passing-2ea44f?style=flat-square)](https://github.com/your-org/terra)
+[![Tests](https://img.shields.io/badge/tests-68%2F68%20passing-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 [概述](#概述) • [功能特性](#功能特性) • [快速开始](#快速开始) • [使用示例](#使用示例) • [架构设计](#架构设计) • [路线图](#路线图)
@@ -54,9 +54,9 @@ Terra 中的连线不只是一条线——**它是一份带类型的 API 契约*
 - **Git 原生持久化**：基于 YAML 的存储格式——可 diff、可合并、可代码审查你的架构
 - **Headless REST API**：自动生成 Swagger 文档（FastAPI）
 - **YAML ⇄ API 双向转换**：从 YAML 创建，通过 API 编辑，导出回 YAML
-- **P2 MVP Web 画布**：项目创建/选择、节点添加/编辑、验证结果展示
+- **完整 Web 画布**：项目创建/选择/删除、节点与连线增删改、SVG 连线、属性面板、验证结果和 YAML/JSON 导出
 
-### 规划中
+### 后续增强
 
 | 阶段 | 里程碑 |
 |------|--------|
@@ -99,7 +99,7 @@ pytest tests/ -v
 ```
 
 > [!TIP]
-> 测试套件覆盖了 64 个场景，涵盖模型、验证器、服务和完整的 REST API。可以将其作为理解引擎行为的参考。
+> 测试套件覆盖了 68 个场景，涵盖模型、验证器、服务和完整的 REST API。可以将其作为理解引擎行为的参考。
 
 ## 使用示例
 
@@ -171,8 +171,8 @@ curl -X POST .../validate
 
 ```
 ┌───────────────────────────────────────────────────┐
-│              Web UI（Phase 2）                     │
-│  画布编辑器  │  属性面板  │  导航                   │
+│              Web UI（P2）                          │
+│  画布编辑器  │  属性面板  │  导航  │  连线与导出    │
 └─────────────────────┬─────────────────────────────┘
                       │  REST + Swagger
 ┌─────────────────────▼─────────────────────────────┐
@@ -208,8 +208,8 @@ terra/
 │   │   ├── validators/         # 可插拔验证规则（4 条）
 │   │   ├── api/                # REST 路由处理
 │   │   └── main.py             # 应用入口
-│   └── tests/                  # 64 个单元与集成测试
-├── frontend/                   # Web 画布编辑器（Phase 2）
+│   └── tests/                  # 68 个单元与集成测试
+├── frontend/                   # React + SVG Web 画布编辑器
 ├── docs/
 │   ├── API.md                  # API 快速参考
 │   ├── FRONTEND_REQUIREMENT.md # 完整前端规格 + API 文档
@@ -232,7 +232,7 @@ terra/
 | 阶段 | 状态 | 交付内容 |
 |------|------|---------|
 | P1 | ✅ 已完成 | 后端引擎：数据模型、CRUD API、验证引擎、YAML 持久化、Swagger |
-| P2 | 🚧 MVP 已完成 | Web 画布编辑器：项目、节点编辑与验证结果；连线编辑持续完善 |
+| P2 | ✅ 已完成 | Web 画布编辑器：项目、节点、连线、属性、验证与导出 |
 | P3 | 规划中 | 验证结果可视化 + 架构决策记录（ADR） |
 | P4 | 规划中 | C4 分层视图 + 200+ 节点画布性能优化 |
 | P5 | 规划中 | 代码生成（OpenAPI/AsyncAPI/数据库 schema）+ 反向同步 |

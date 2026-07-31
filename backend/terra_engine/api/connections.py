@@ -38,6 +38,12 @@ def get_connection(project_id: str, connection_id: str):
 
 @router.put("/{connection_id}", response_model=Connection)
 def update_connection(project_id: str, connection_id: str, connection: Connection):
+    current = project_service.get_project(project_id)
+    if current is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    node_ids = {node.id for node in current.nodes}
+    if connection.source_node_id not in node_ids or connection.target_node_id not in node_ids:
+        raise HTTPException(status_code=422, detail="Connection references an unknown node")
     project = project_service.update_connection(project_id, connection_id, connection)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
@@ -49,6 +55,11 @@ def update_connection(project_id: str, connection_id: str, connection: Connectio
 
 @router.delete("/{connection_id}")
 def delete_connection(project_id: str, connection_id: str):
+    current = project_service.get_project(project_id)
+    if current is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not any(connection.id == connection_id for connection in current.connections):
+        raise HTTPException(status_code=404, detail="Connection not found")
     project = project_service.delete_connection(project_id, connection_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")

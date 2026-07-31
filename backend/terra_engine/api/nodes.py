@@ -45,6 +45,11 @@ def update_node(project_id: str, node_id: str, node: Node):
 
 @router.delete("/{node_id}")
 def delete_node(project_id: str, node_id: str):
+    current = project_service.get_project(project_id)
+    if current is None:
+        raise HTTPException(status_code=404, detail="Project not found")
+    if not any(node.id == node_id for node in current.nodes):
+        raise HTTPException(status_code=404, detail="Node not found")
     project = project_service.delete_node(project_id, node_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
