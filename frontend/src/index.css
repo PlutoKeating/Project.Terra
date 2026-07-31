@@ -1,8 +1,11 @@
-/* Terra asset cache marker: 2026-07-31 */
 @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap');
-@import "tailwindcss";
 
-@theme {
+/* Terra asset cache marker: 2026-07-31 */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
   --font-courier: "Courier Prime", Courier, monospace;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
