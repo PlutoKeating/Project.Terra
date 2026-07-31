@@ -51,12 +51,13 @@ Terra 中的连线不只是一条线——**它是一份带类型的 API 契约*
 - **8 种传输协议**：HTTP REST、gRPC、GraphQL、WebSocket、AMQP、Kafka、数据库协议、自定义
 - **带类型的数据载体**：内联 JSON Schema、Protobuf 引用、GraphQL 类型
 - **验证引擎**：循环依赖检测、孤立节点、协议兼容性、完整性校验
-- **Git 原生持久化**：基于 YAML 的存储格式——可 diff、可合并、可代码审查你的架构
-- **Headless REST API**：自动生成 Swagger 文档（FastAPI）
+- **双模式持久化**：本地使用 YAML，Vercel 使用 Supabase PostgreSQL JSONB
+- **Vercel Serverless API**：`/api/*` 独立承载 Python FastAPI
+- **Supabase Auth 接入**：前端 session 自动向 API 传递 Bearer token
 - **YAML ⇄ API 双向转换**：从 YAML 创建，通过 API 编辑，导出回 YAML
 - **完整 Web 画布**：项目创建/选择/删除、节点与连线增删改、SVG 连线、属性面板、验证结果和 YAML/JSON 导出
 
-### 后续增强
+### 工程部署形态
 
 | 阶段 | 里程碑 |
 |------|--------|
@@ -77,17 +78,18 @@ Terra 中的连线不只是一条线——**它是一份带类型的 API 契约*
 
 ```bash
 git clone https://github.com/your-org/terra.git
-cd terra/backend
+cd terra
+cp .env.example .env
 
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
 ### 2. 启动引擎
 
 ```bash
-uvicorn terra_engine.main:app --reload --port 8000
+uvicorn terra_engine.main:app --app-dir backend --reload --port 8000
 ```
 
 打开 **http://localhost:8000/docs** — 你现在拥有了一个完整的 Swagger 交互式 API 调试环境。
@@ -201,7 +203,8 @@ curl -X POST .../validate
 
 ```
 terra/
-├── backend/                    # FastAPI Headless 引擎（Phase 1）
+├── api/index.py                # Vercel Python Serverless 入口（/api/*）
+├── backend/                    # FastAPI 领域引擎
 │   ├── terra_engine/
 │   │   ├── models/             # Pydantic 数据模型与枚举
 │   │   ├── services/           # 业务逻辑与 YAML 持久化
@@ -209,7 +212,9 @@ terra/
 │   │   ├── api/                # REST 路由处理
 │   │   └── main.py             # 应用入口
 │   └── tests/                  # 68 个单元与集成测试
-├── frontend/                   # React + SVG Web 画布编辑器
+├── frontend/                   # React + SVG Web 画布编辑器（Vercel 静态输出）
+├── supabase/schema.sql         # Supabase 表与 RLS 策略
+├── vercel.json                 # 前端根路径 + 后端 /api 路由
 ├── docs/
 │   ├── API.md                  # API 快速参考
 │   ├── FRONTEND_REQUIREMENT.md # 完整前端规格 + API 文档

@@ -6,3 +6,5 @@ Three-layer architecture:
 - **Model Layer** (Pydantic) — data models with YAML serialization
 
 See root `docs/ARCHITECTURE.md` for system-level architecture.
+
+Deployment adapter: `api/index.py` exposes the FastAPI app as a Vercel Python Function. `services/project_service.py` selects Supabase REST/JSONB persistence when `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are configured, otherwise it uses local YAML files.

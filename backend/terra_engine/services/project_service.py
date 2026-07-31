@@ -1,6 +1,7 @@
 import os
 import yaml
 from terra_engine.models.project import Project, Node, Connection
+from terra_engine.services import supabase_service
 
 
 def _data_dir() -> str:
@@ -60,6 +61,9 @@ def create_project(name: str, description: str | None = None, yaml_content: str 
 
 
 def get_project(project_id: str) -> Project | None:
+    if supabase_service.enabled():
+        data = supabase_service.get(project_id)
+        return _dict_to_project(data) if data else None
     path = _project_path(project_id)
     if not os.path.exists(path):
         return None
@@ -69,6 +73,8 @@ def get_project(project_id: str) -> Project | None:
 
 
 def list_projects() -> list[Project]:
+    if supabase_service.enabled():
+        return [_dict_to_project(data) for data in supabase_service.list_all()]
     _ensure_data_dir()
     projects = []
     for fname in os.listdir(_data_dir()):
@@ -93,6 +99,11 @@ def update_project(project_id: str, name: str | None = None, description: str | 
 
 
 def delete_project(project_id: str) -> bool:
+    if supabase_service.enabled():
+        if get_project(project_id) is None:
+            return False
+        supabase_service.delete(project_id)
+        return True
     path = _project_path(project_id)
     if os.path.exists(path):
         os.remove(path)
@@ -101,6 +112,9 @@ def delete_project(project_id: str) -> bool:
 
 
 def _save_project(project: Project):
+    if supabase_service.enabled():
+        supabase_service.save(_project_to_dict(project))
+        return
     _ensure_data_dir()
     path = _project_path(project.id)
     with open(path, "w") as f:

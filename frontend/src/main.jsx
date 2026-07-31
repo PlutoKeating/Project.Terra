@@ -1,18 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import { createRoot } from 'react-dom/client'
 import './style.css'
+import { supabase } from './lib/supabase'
 
 const API = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1'
 const types = ['service','database','cache','queue','external','infrastructure']
 const protocols = ['http_rest','grpc','graphql','websocket','amqp','kafka','database','custom']
 const modes = ['sync_request_response','async_message','one_way_notification','publish_subscribe','event_broadcast']
-async function request(path, options={}) { const r = await fetch(API + path, {headers:{'Content-Type':'application/json'}, ...options}); if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.status === 204 ? null : r.json() }
+async function request(path, options={}) { const session = supabase ? (await supabase.auth.getSession()).data.session : null; const headers = {'Content-Type':'application/json', ...(options.headers||{})}; if(session) headers.Authorization=`Bearer ${session.access_token}`; const r = await fetch(API + path, {...options,headers}); if (!r.ok) throw new Error((await r.json()).detail || r.statusText); return r.status === 204 ? null : r.json() }
 
 function App() {
-  const [projects,setProjects]=useState([]), [project,setProject]=useState(null), [selected,setSelected]=useState(null), [connection,setConnection]=useState(null), [connecting,setConnecting]=useState(false), [validation,setValidation]=useState([]), [error,setError]=useState('')
+  const [projects,setProjects]=useState([]), [project,setProject]=useState(null), [selected,setSelected]=useState(null), [connection,setConnection]=useState(null), [connecting,setConnecting]=useState(false), [validation,setValidation]=useState([]), [error,setError]=useState(''), [session,setSession]=useState(null)
   const run=fn=>fn().catch(e=>setError(e.message))
   const refresh=()=>run(async()=>{const ps=await request('/projects');setProjects(ps);if(project){const p=ps.find(x=>x.id===project.id);if(p)setProject(p)}})
-  useEffect(()=>{refresh()},[])
+  useEffect(()=>{refresh();if(supabase){supabase.auth.getSession().then(({data})=>setSession(data.session));const listener=supabase.auth.onAuthStateChange((_event,next)=>setSession(next));return ()=>listener.data.subscription.unsubscribe()}},[])
+  const signIn=()=>run(async()=>{if(!supabase)throw new Error('未配置 Supabase Auth');const email=prompt('邮箱');const password=prompt('密码');if(email&&password){const {error:e}=await supabase.auth.signInWithPassword({email,password});if(e)throw e}})
+  const signOut=()=>run(async()=>{if(supabase)await supabase.auth.signOut()})
   const create=()=>run(async()=>{const p=await request('/projects',{method:'POST',body:JSON.stringify({name:'新架构'})});setProjects([...projects,p]);setProject(p)})
   const addNode=()=>run(async()=>{const n=await request(`/projects/${project.id}/nodes`,{method:'POST',body:JSON.stringify({type:'service',label:'新服务',position:{x:120+project.nodes.length*220,y:160}})});setProject({...project,nodes:[...project.nodes,n]});setSelected(n);setConnection(null)})
   const saveNode=e=>{e.preventDefault();run(async()=>{const n=await request(`/projects/${project.id}/nodes/${selected.id}`,{method:'PUT',body:JSON.stringify(selected)});setProject({...project,nodes:project.nodes.map(x=>x.id===n.id?n:x)});setSelected(n)})}
