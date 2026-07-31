@@ -1,6 +1,6 @@
 # Terra Backend API
 
-See `FRONTEND_REQUIREMENT.md` §3 for the complete API reference with request/response examples for all 19 endpoints.
+See `FRONTEND_REQUIREMENT.md` §3 for the complete API reference with request/response examples for the Serverless REST endpoints.
 
 ## Quick Links
 

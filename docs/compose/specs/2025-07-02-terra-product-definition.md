@@ -157,7 +157,7 @@ YAML 存储 + JSON API。设计原则：
 │       └────────────┼─────────────┘       │
 │               REST API                   │
 ├─────────────────────────────────────────┤
-│  Terra Engine (FastAPI)                  │  ← Phase 1 ✅
+│  Terra Core + Vercel Serverless API      │  ← Phase 1 ✅
 │  Models / Services / Validators          │
 │  YAML Persistence / Export              │
 ├─────────────────────────────────────────┤

@@ -4,13 +4,12 @@
 - Python >= 3.11 (backend)
 - Node.js >= 20 (frontend)
 
-## Backend / Vercel API
+## Vercel API
 ```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
-uvicorn terra_engine.main:app --app-dir backend --reload --port 8000
+flask --app api.app run --port 8000
 ```
 
 ## Frontend

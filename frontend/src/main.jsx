@@ -16,6 +16,7 @@ function App() {
   useEffect(()=>{refresh();if(supabase){supabase.auth.getSession().then(({data})=>setSession(data.session));const listener=supabase.auth.onAuthStateChange((_event,next)=>setSession(next));return ()=>listener.data.subscription.unsubscribe()}},[])
   const signIn=()=>run(async()=>{if(!supabase)throw new Error('未配置 Supabase Auth');const email=prompt('邮箱');const password=prompt('密码');if(email&&password){const {error:e}=await supabase.auth.signInWithPassword({email,password});if(e)throw e}})
   const signOut=()=>run(async()=>{if(supabase)await supabase.auth.signOut()})
+  useEffect(()=>{if(!supabase)return;const button=document.createElement('button');button.className='auth-floating';button.textContent=session?'退出登录':'登录';button.onclick=session?signOut:signIn;document.body.appendChild(button);return()=>button.remove()},[session])
   const create=()=>run(async()=>{const p=await request('/projects',{method:'POST',body:JSON.stringify({name:'新架构'})});setProjects([...projects,p]);setProject(p)})
   const addNode=()=>run(async()=>{const n=await request(`/projects/${project.id}/nodes`,{method:'POST',body:JSON.stringify({type:'service',label:'新服务',position:{x:120+project.nodes.length*220,y:160}})});setProject({...project,nodes:[...project.nodes,n]});setSelected(n);setConnection(null)})
   const saveNode=e=>{e.preventDefault();run(async()=>{const n=await request(`/projects/${project.id}/nodes/${selected.id}`,{method:'PUT',body:JSON.stringify(selected)});setProject({...project,nodes:project.nodes.map(x=>x.id===n.id?n:x)});setSelected(n)})}

@@ -6,8 +6,8 @@ _面向系统架构的设计媒介 — 可视化画布，工程级精度。_
 
 [![Phase](https://img.shields.io/badge/phase-P2%20MVP-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![Python](https://img.shields.io/badge/python-3.11+-blue?style=flat-square)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/api-FastAPI-009688?style=flat-square)](https://fastapi.tiangolo.com)
-[![Tests](https://img.shields.io/badge/tests-68%2F68%20passing-2ea44f?style=flat-square)](https://github.com/your-org/terra)
+[![API](https://img.shields.io/badge/api-Vercel%20Serverless-000000?style=flat-square)](https://vercel.com/)
+[![Tests](https://img.shields.io/badge/tests-43%2F43%20passing-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![License](https://img.shields.io/badge/license-MIT-blue?style=flat-square)](LICENSE)
 
 [概述](#概述) • [功能特性](#功能特性) • [快速开始](#快速开始) • [使用示例](#使用示例) • [架构设计](#架构设计) • [路线图](#路线图)
@@ -52,7 +52,7 @@ Terra 中的连线不只是一条线——**它是一份带类型的 API 契约*
 - **带类型的数据载体**：内联 JSON Schema、Protobuf 引用、GraphQL 类型
 - **验证引擎**：循环依赖检测、孤立节点、协议兼容性、完整性校验
 - **双模式持久化**：本地使用 YAML，Vercel 使用 Supabase PostgreSQL JSONB
-- **Vercel Serverless API**：`/api/*` 独立承载 Python FastAPI
+- **Vercel Serverless API**：`/api/*` 独立承载 Flask/W​​SGI Python Function
 - **Supabase Auth 接入**：前端 session 自动向 API 传递 Bearer token
 - **YAML ⇄ API 双向转换**：从 YAML 创建，通过 API 编辑，导出回 YAML
 - **完整 Web 画布**：项目创建/选择/删除、节点与连线增删改、SVG 连线、属性面板、验证结果和 YAML/JSON 导出
@@ -89,7 +89,7 @@ pip install -r requirements.txt
 ### 2. 启动引擎
 
 ```bash
-uvicorn terra_engine.main:app --app-dir backend --reload --port 8000
+flask --app api.app run --port 8000
 ```
 
 打开 **http://localhost:8000/docs** — 你现在拥有了一个完整的 Swagger 交互式 API 调试环境。
@@ -101,7 +101,7 @@ pytest tests/ -v
 ```
 
 > [!TIP]
-> 测试套件覆盖了 68 个场景，涵盖模型、验证器、服务和完整的 REST API。可以将其作为理解引擎行为的参考。
+> 测试套件覆盖了 43 个场景，涵盖模型、验证器、服务和完整的 Serverless REST API。可以将其作为理解引擎行为的参考。
 
 ## 使用示例
 
@@ -178,7 +178,7 @@ curl -X POST .../validate
 └─────────────────────┬─────────────────────────────┘
                       │  REST + Swagger
 ┌─────────────────────▼─────────────────────────────┐
-│            Terra Engine（FastAPI）                  │
+│            Terra Core + Serverless API             │
 │                                                    │
 │  ┌──────────┐  ┌──────────┐  ┌────────────────┐   │
 │  │  Models  │  │ Services │  │   Validators   │   │
@@ -192,9 +192,9 @@ curl -X POST .../validate
 └────────────────────────────────────────────────────┘
 ```
 
-后端采用分层的 FastAPI 架构：
+后端采用领域核心与 Serverless 适配器分层：
 
-- **API 层** — RESTful 路由，自动生成 OpenAPI 文档
+- **API 层** — Flask/W​​SGI RESTful Serverless 路由
 - **Service 层** — 项目/节点/连线 CRUD 业务逻辑、验证编排、YAML 导入导出
 - **Model 层** — Pydantic 模型，对全部领域实体进行严格类型约束
 - **Validation 层** — 可插拔规则引擎（4 条规则，可扩展）
@@ -204,14 +204,15 @@ curl -X POST .../validate
 ```
 terra/
 ├── api/index.py                # Vercel Python Serverless 入口（/api/*）
-├── backend/                    # FastAPI 领域引擎
+├── core/                       # 领域模型、服务和验证器
 │   ├── terra_engine/
 │   │   ├── models/             # Pydantic 数据模型与枚举
 │   │   ├── services/           # 业务逻辑与 YAML 持久化
 │   │   ├── validators/         # 可插拔验证规则（4 条）
 │   │   ├── api/                # REST 路由处理
 │   │   └── main.py             # 应用入口
-│   └── tests/                  # 68 个单元与集成测试
+├── api/                        # Vercel Serverless API
+├── tests/                      # 43 个单元与集成测试
 ├── frontend/                   # React + SVG Web 画布编辑器（Vercel 静态输出）
 ├── supabase/schema.sql         # Supabase 表与 RLS 策略
 ├── vercel.json                 # 前端根路径 + 后端 /api 路由
