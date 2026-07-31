@@ -89,25 +89,24 @@ git commit -m "<clear local commit message>"
 
 如果存在**非常确定与你先前工作完全无关的文件改动**，则需要询问用户如何后续处理
 
-### 3.3 严令禁止 git push
+### 3.3 严禁 force push
 
-Agent 严令禁止执行任何远程推送命令，包括但不限于：
+Agent 可以在用户明确授权、确认目标远程仓库和分支后执行普通远程推送。严禁执行任何会重写远程历史的强制推送，包括但不限于：
 
 ```bash
-git push
-git push origin <branch>
 git push --force
 git push --force-with-lease
-git push --tags
+git push --force origin <branch>
+git push --force-with-lease origin <branch>
 ```
 
 禁止原因：
 
-- 远程分支会影响多人协作和发布流水线。
-- 推送可能触发 CI/CD、部署、合并规则或生产流程。
-- 远程发布权必须由人类开发者或项目维护者控制。
+- 强制推送会覆盖远程历史，可能破坏多人协作和发布流水线。
+- 推送可能触发 CI/CD、部署、合并规则或生产流程，执行前必须确认目标。
+- 涉及生产分支、保护分支或不明确目标时，必须先请求 Human 确认。
 
-Agent 只允许在本地完成 commit。是否 push、何时 push、push 到哪个远程分支，必须由 Human 决定并执行。
+普通 push 必须保持审查边界清晰，并在 push 前检查分支、远程地址、工作区状态和待推送 commit。
 
 ---
 
@@ -129,7 +128,7 @@ Agent 的工作边界：
 
 - 可以在当前本地分支上修改、暂存、提交。
 - 不得自行把变更合并到 `staging` 或 `production`。
-- 不得自行创建远程分支或推送远程。
+- 不得自行创建远程分支；远程推送须遵循本节确认流程。
 - 如果用户要求涉及 `staging` 或 `production`，必须先说明风险，并只在本地准备变更。
 
 推荐流程：
@@ -137,7 +136,7 @@ Agent 的工作边界：
 1. 从最新的个人特性分支开始工作。
 2. 小步提交本地 commit。
 3. 本地验证通过后，交给 Human 审查。
-4. Human 负责 push、创建 Pull Request / Merge Request、触发 CI、合并到 `staging`。
+4. Human 负责最终审查；确认后可由 Agent 或 Human 执行普通 push，再创建 Pull Request / Merge Request、触发 CI、合并到 `staging`。
 5. `staging` 验证通过后，由 Human 或发布负责人合并到 `production`。
 
 ---
@@ -166,4 +165,3 @@ Agent 的工作边界：
 - **必须进行文档更新**，文档范围为全局文档与你修改涉及模块（前端/后端/开发者前端）的修改，严格按照你的代码修改与当前最新的代码内容更新文档，不要缺失或包含旧内容
 - **必须进行git仓库同步**，本地 `git add` 和 `git commit`，保持审查边界清晰。
 - 回复用户时列出文件、验证结果和未完成风险。
-
