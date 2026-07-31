@@ -15,5 +15,6 @@ data/
 backend/data/
 frontend/node_modules/
 frontend/dist/
+supabase/.temp/
 .DS_Store
 skills-lock.json
