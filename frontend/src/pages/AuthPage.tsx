@@ -12,6 +12,7 @@ export default function AuthPage() {
 
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
+  const authRedirectUrl = `${window.location.origin}/`;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
@@ -22,7 +23,11 @@ export default function AuthPage() {
     if (!supabase) { setError("Supabase Auth 未配置"); return; }
     setBusy(true); setError("");
     const result = isSignUp
-      ? await supabase.auth.signUp({ email, password })
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: authRedirectUrl },
+        })
       : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (result.error) { setError(result.error.message); return; }
@@ -114,7 +119,7 @@ export default function AuthPage() {
             <div className="pt-4" id="auth-submit-wrapper">
               <button
                 type="submit"
-                className="w-full min-h-[64px] py-4 border font-mono text-[11px] leading-5 font-bold uppercase tracking-[0.2em] relative transition-all active:translate-y-[1px] hover:bg-gray-50/50 cursor-pointer"
+                className="w-full min-h-[52px] py-3 border font-mono text-[11px] leading-[18px] font-bold uppercase tracking-[0.2em] relative transition-all active:translate-y-[1px] hover:bg-gray-50/50 cursor-pointer"
                 style={{
                   borderColor: designSystem.colors.borderDark,
                   color: designSystem.colors.onSurface,

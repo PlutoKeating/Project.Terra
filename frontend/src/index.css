@@ -28,13 +28,13 @@ body {
 /* Auth actions keep their layout even if utility CSS is delayed or unavailable. */
 #auth-submit-wrapper #btn-auth-submit {
   display: flex;
-  min-height: 64px;
+  min-height: 52px;
   align-items: center;
   justify-content: center;
   position: relative;
   width: 100%;
-  padding: 16px 20px;
-  line-height: 20px;
+  padding: 12px 16px;
+  line-height: 18px;
   overflow: hidden;
 }
 
