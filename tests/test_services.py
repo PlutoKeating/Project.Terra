@@ -38,6 +38,13 @@ class TestProjectCRUD:
         assert updated is not None
         assert updated.name == "New Name"
 
+    def test_create_and_update_metadata(self):
+        project = project_service.create_project("Metadata Project", metadata={"active": True})
+        assert project.metadata == {"active": True}
+        updated = project_service.update_project(project.id, metadata={"active": False})
+        assert updated is not None
+        assert updated.metadata == {"active": False}
+
     def test_delete_project(self):
         p = project_service.create_project("To Delete")
         assert project_service.delete_project(p.id)

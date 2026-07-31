@@ -56,7 +56,7 @@ def projects():
         return jsonify([p.model_dump(mode="json") for p in project_service.list_projects()])
     data = request.get_json(force=True) or {}
     try:
-        project = project_service.create_project(data.get("name", ""), data.get("description"), data.get("yaml_content"))
+        project = project_service.create_project(data.get("name", ""), data.get("description"), data.get("yaml_content"), data.get("metadata"))
         return jsonify(project.model_dump(mode="json"))
     except (ValueError, TypeError, KeyError) as exc:
         return jsonify(detail=f"Invalid project YAML: {exc}"), 422
@@ -73,7 +73,7 @@ def project(project_id):
         project_service.delete_project(project_id)
         return jsonify(status="deleted")
     data = request.get_json(force=True) or {}
-    updated = project_service.update_project(project_id, data.get("name"), data.get("description"))
+    updated = project_service.update_project(project_id, data.get("name"), data.get("description"), data.get("metadata"))
     return jsonify(updated.model_dump(mode="json"))
 
 
