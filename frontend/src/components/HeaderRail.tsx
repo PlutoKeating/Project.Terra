@@ -4,6 +4,7 @@ import { Bell, Settings, User, Search, LogOut } from "lucide-react";
 import { designSystem } from "../designSystem";
 import RainbowStrip from "./RainbowStrip";
 import { apiFetch } from "../apiFetch";
+import { supabase } from "../lib/supabase";
 
 export default function HeaderRail() {
   const location = useLocation();
@@ -229,7 +230,8 @@ export default function HeaderRail() {
                   </p>
                 </div>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    if (supabase) await supabase.auth.signOut();
                     localStorage.removeItem("terra-user-email");
                     localStorage.removeItem("terra-user-role");
                     setProfileMenuOpen(false);

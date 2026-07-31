@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { designSystem } from "../designSystem";
 import RainbowStrip from "../components/RainbowStrip";
+import { supabase } from "../lib/supabase";
 
 export default function AuthPage() {
   const navigate = useNavigate();
@@ -9,18 +10,23 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       alert("Please enter a valid email and password.");
       return;
     }
 
-    // Save mock session locally to keep login state persistent
-    localStorage.setItem("terra-user-email", email);
-    localStorage.setItem("terra-user-role", "Architect");
-    
-    // Redirect to dashboard
+    if (!supabase) { setError("Supabase Auth 未配置"); return; }
+    setBusy(true); setError("");
+    const result = isSignUp
+      ? await supabase.auth.signUp({ email, password })
+      : await supabase.auth.signInWithPassword({ email, password });
+    setBusy(false);
+    if (result.error) { setError(result.error.message); return; }
+    if (isSignUp && !result.data.session) { setError("注册成功，请检查邮箱完成验证"); return; }
     navigate("/");
   };
 
@@ -116,13 +122,14 @@ export default function AuthPage() {
                 }}
                 id="btn-auth-submit"
               >
-                {isSignUp ? "Sign Up" : "Sign In"}
+                {busy ? "Working..." : isSignUp ? "Sign Up" : "Sign In"}
                 {/* Embedded rainbow banding strip under the button to replicate exact design */}
                 <div className="absolute left-1 right-1 bottom-1 h-[4px] overflow-hidden">
                   <RainbowStrip height="4px" />
                 </div>
               </button>
             </div>
+            {error && <p className="font-mono text-xs text-red-600" role="alert">{error}</p>}
           </form>
 
           {/* Bottom navigation selectors */}
