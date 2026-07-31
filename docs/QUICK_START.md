@@ -24,4 +24,4 @@ npm run dev
 
 ## Supabase
 
-复制 `.env.example`，配置 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`，并在 Supabase SQL Editor 执行 `supabase/schema.sql`。服务端只使用 service role key，绝不提交到仓库；浏览器只使用 anon key。
+复制 `.env.example`，配置 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`，并在 Supabase SQL Editor 执行 `supabase/schema.sql`。服务端只使用 service role key，绝不提交到仓库；浏览器只使用 anon key。生产环境将 `SUPABASE_AUTH_REQUIRED=true`，API 会通过 Supabase Auth 校验 Bearer token。
