@@ -121,6 +121,7 @@ export default function AuthPage() {
                   backgroundColor: "#ffffff",
                 }}
                 id="btn-auth-submit"
+                aria-label={isSignUp ? "Sign up" : "Sign in"}
               >
                 {busy ? "Working..." : isSignUp ? "Sign Up" : "Sign In"}
                 {/* Embedded rainbow banding strip under the button to replicate exact design */}

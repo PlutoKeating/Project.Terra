@@ -25,6 +25,42 @@ body {
   color: #1d1b20;
 }
 
+/* Auth actions keep their layout even if utility CSS is delayed or unavailable. */
+#auth-submit-wrapper #btn-auth-submit {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  width: 100%;
+  padding: 16px 20px;
+  line-height: 20px;
+  overflow: hidden;
+}
+
+#auth-submit-wrapper #btn-auth-submit > div {
+  pointer-events: none;
+}
+
+#auth-bottom-links {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+#auth-bottom-links button {
+  min-height: 36px;
+  padding: 8px 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#auth-link-toggle {
+  border: 1px solid #3f236d;
+  background: #f7f0ff;
+}
+
 /* Disable scrollbar on primary editor canvas */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
