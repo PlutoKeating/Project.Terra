@@ -247,6 +247,16 @@ class TestValidationAPI:
         resp = client.post("/api/v1/projects/nonexistent/validate")
         assert resp.status_code == 404
 
+    def test_connection_rejects_unknown_node(self, client, project):
+        resp = client.post(f"/api/v1/projects/{project['id']}/connections", json={
+            "source_node_id": "missing", "target_node_id": "also-missing",
+            "mode": "sync_request_response", "protocol": "http_rest"})
+        assert resp.status_code == 422
+
+    def test_export_rejects_unknown_format(self, client, project):
+        resp = client.get(f"/api/v1/projects/{project['id']}/export?format=xml")
+        assert resp.status_code == 400
+
 
 class TestFullWorkflow:
     def test_ecommerce_scenario(self, client):

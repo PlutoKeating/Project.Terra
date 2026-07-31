@@ -4,7 +4,7 @@
 
 _面向系统架构的设计媒介 — 可视化画布，工程级精度。_
 
-[![Phase](https://img.shields.io/badge/phase-backend%20complete-2ea44f?style=flat-square)](https://github.com/your-org/terra)
+[![Phase](https://img.shields.io/badge/phase-P2%20MVP-2ea44f?style=flat-square)](https://github.com/your-org/terra)
 [![Python](https://img.shields.io/badge/python-3.11+-blue?style=flat-square)](https://python.org)
 [![FastAPI](https://img.shields.io/badge/api-FastAPI-009688?style=flat-square)](https://fastapi.tiangolo.com)
 [![Tests](https://img.shields.io/badge/tests-64%2F64%20passing-2ea44f?style=flat-square)](https://github.com/your-org/terra)
@@ -54,6 +54,7 @@ Terra 中的连线不只是一条线——**它是一份带类型的 API 契约*
 - **Git 原生持久化**：基于 YAML 的存储格式——可 diff、可合并、可代码审查你的架构
 - **Headless REST API**：自动生成 Swagger 文档（FastAPI）
 - **YAML ⇄ API 双向转换**：从 YAML 创建，通过 API 编辑，导出回 YAML
+- **P2 MVP Web 画布**：项目创建/选择、节点添加/编辑、验证结果展示
 
 ### 规划中
 
@@ -231,7 +232,7 @@ terra/
 | 阶段 | 状态 | 交付内容 |
 |------|------|---------|
 | P1 | ✅ 已完成 | 后端引擎：数据模型、CRUD API、验证引擎、YAML 持久化、Swagger |
-| P2 | ▶ 下一阶段 | Web 画布编辑器，支持节点和连线编辑 |
+| P2 | 🚧 MVP 已完成 | Web 画布编辑器：项目、节点编辑与验证结果；连线编辑持续完善 |
 | P3 | 规划中 | 验证结果可视化 + 架构决策记录（ADR） |
 | P4 | 规划中 | C4 分层视图 + 200+ 节点画布性能优化 |
 | P5 | 规划中 | 代码生成（OpenAPI/AsyncAPI/数据库 schema）+ 反向同步 |

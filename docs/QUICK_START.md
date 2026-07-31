@@ -19,3 +19,5 @@ cd frontend
 npm install
 npm run dev
 ```
+
+前端默认访问 `http://localhost:8000/api/v1`。生产构建使用 `npm run build`。

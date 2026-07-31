@@ -7,9 +7,13 @@ router = APIRouter(prefix="/projects/{project_id}/connections", tags=["connectio
 
 @router.post("", response_model=Connection)
 def create_connection(project_id: str, connection: Connection):
-    project = project_service.add_connection(project_id, connection)
+    project = project_service.get_project(project_id)
     if project is None:
         raise HTTPException(status_code=404, detail="Project not found")
+    node_ids = {node.id for node in project.nodes}
+    if connection.source_node_id not in node_ids or connection.target_node_id not in node_ids:
+        raise HTTPException(status_code=422, detail="Connection references an unknown node")
+    project = project_service.add_connection(project_id, connection)
     return project.connections[-1]
 
 

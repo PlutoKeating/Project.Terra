@@ -12,5 +12,8 @@ node_modules/
 .agents/
 .mimocode/
 data/
+backend/data/
+frontend/node_modules/
+frontend/dist/
 .DS_Store
 skills-lock.json

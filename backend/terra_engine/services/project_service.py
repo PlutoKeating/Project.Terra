@@ -3,15 +3,16 @@ import yaml
 from terra_engine.models.project import Project, Node, Connection
 
 
-DATA_DIR = os.environ.get("TERRA_DATA_DIR", "./data")
+def _data_dir() -> str:
+    return os.environ.get("TERRA_DATA_DIR", "./data")
 
 
 def _ensure_data_dir():
-    os.makedirs(DATA_DIR, exist_ok=True)
+    os.makedirs(_data_dir(), exist_ok=True)
 
 
 def _project_path(project_id: str) -> str:
-    return os.path.join(DATA_DIR, f"{project_id}.yaml")
+    return os.path.join(_data_dir(), f"{project_id}.yaml")
 
 
 def _project_to_dict(project: Project) -> dict:
@@ -29,12 +30,19 @@ def _project_to_dict(project: Project) -> dict:
 
 
 def _dict_to_project(data: dict) -> Project:
+    positions = data.get("node_positions", {})
+    nodes = []
+    for raw_node in data.get("nodes", []):
+        node = dict(raw_node)
+        if "position" not in node and node.get("id") in positions:
+            node["position"] = positions[node["id"]]
+        nodes.append(Node.model_validate(node))
     return Project(
         id=data["project"]["id"],
         name=data["project"]["name"],
         description=data["project"].get("description"),
         version=data["project"].get("version", "0.1.0"),
-        nodes=[Node.model_validate(n) for n in data.get("nodes", [])],
+        nodes=nodes,
         connections=[Connection.model_validate(c) for c in data.get("connections", [])],
         metadata=data.get("metadata", {}),
     )
@@ -63,7 +71,7 @@ def get_project(project_id: str) -> Project | None:
 def list_projects() -> list[Project]:
     _ensure_data_dir()
     projects = []
-    for fname in os.listdir(DATA_DIR):
+    for fname in os.listdir(_data_dir()):
         if fname.endswith(".yaml"):
             pid = fname[:-5]
             proj = get_project(pid)

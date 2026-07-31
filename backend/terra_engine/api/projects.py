@@ -21,11 +21,10 @@ class ProjectUpdateBody(BaseModel):
 
 @router.post("", response_model=Project)
 def create_project(body: ProjectCreateBody):
-    project = project_service.create_project(
-        name=body.name,
-        description=body.description,
-        yaml_content=body.yaml_content,
-    )
+    try:
+        project = project_service.create_project(name=body.name, description=body.description, yaml_content=body.yaml_content)
+    except (ValueError, TypeError, KeyError) as exc:
+        raise HTTPException(status_code=422, detail=f"Invalid project YAML: {exc}") from exc
     return project
 
 
@@ -68,4 +67,6 @@ def export_project(project_id: str, format: str = Query("yaml")):
         raise HTTPException(status_code=404, detail="Project not found")
     if format == "yaml":
         return {"yaml": export_service.export_project_yaml(project)}
-    return export_service.export_project_json(project)
+    if format == "json":
+        return export_service.export_project_json(project)
+    raise HTTPException(status_code=400, detail="format must be yaml or json")

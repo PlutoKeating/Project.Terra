@@ -174,3 +174,15 @@ class TestExportService:
         p = Project(name="Test")
         json_data = export_project_json(p)
         assert json_data["name"] == "Test"
+
+    def test_yaml_export_import_preserves_positions(self):
+        from terra_engine.services.export_service import export_project_yaml
+        p = Project(name="Positioned", nodes=[Node(id="n1", type=NodeType.SERVICE, label="API", position={"x": 42, "y": 84})])
+        imported = project_service.create_project("ignored", yaml_content=export_project_yaml(p))
+        assert imported.nodes[0].position.x == 42
+        assert imported.nodes[0].position.y == 84
+
+    def test_data_dir_is_read_at_runtime(self, monkeypatch, tmp_path):
+        monkeypatch.setenv("TERRA_DATA_DIR", str(tmp_path))
+        p = project_service.create_project("Runtime dir")
+        assert (tmp_path / f"{p.id}.yaml").exists()
