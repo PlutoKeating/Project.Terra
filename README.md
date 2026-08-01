@@ -54,6 +54,7 @@ Terra 中的连线不只是一条线——**它是一份带类型的 API 契约*
 - **双模式持久化**：本地使用 YAML，Vercel 使用 Supabase PostgreSQL JSONB
 - **Vercel Serverless API**：`/api/*` 独立承载 Flask/W​​SGI Python Function
 - **Supabase Auth 接入**：前端 session 自动向 API 传递 Bearer token
+- **生产邮件投递**：Supabase Auth 使用自定义 SSL SMTP，避免内置测试邮件服务的收件人与速率限制
 - **YAML ⇄ API 双向转换**：从 YAML 创建，通过 API 编辑，导出回 YAML
 - **完整 Web 画布**：项目创建/选择/删除、节点与连线增删改、SVG 连线、属性面板、验证结果和 YAML/JSON 导出
 
