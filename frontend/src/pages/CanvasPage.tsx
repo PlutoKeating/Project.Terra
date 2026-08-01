@@ -76,7 +76,7 @@ export default function CanvasPage() {
   const [draggingNodeId, setDraggingNodeId] = useState<string | null>(null);
   const [dragStartOffset, setDragStartOffset] = useState({ x: 0, y: 0 });
 
-  // Backend Validation States
+  // Server validation state
   const [validationResults, setValidationResults] = useState<ValidationResult[]>([]);
   const [validating, setValidating] = useState(false);
   const [showValidationPanel, setShowValidationPanel] = useState(false);
@@ -143,11 +143,10 @@ export default function CanvasPage() {
     persistFullProjectState(previousProject);
   };
 
-  // Synchronize entire state back to database (fallback helper)
+  // Synchronize project metadata after restoring local undo history.
   const persistFullProjectState = async (projState: Project) => {
     setSyncStatus("saving");
     try {
-      // 1. Sync metadata
       await apiFetch(`/api/v1/projects/${projState.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -157,13 +156,6 @@ export default function CanvasPage() {
         }),
       });
 
-      // 2. We can recreate the state or put nodes sequentially.
-      // To keep it simple and robust, we can update coordinates and nodes on demand.
-      // But the best approach is: since nodes and connections have specific PUT handlers,
-      // we persist individual nodes and connections or simply let backend receive the final state!
-      // Wait, our backend supports individual CRUD operations. For a quick full sync,
-      // we can trigger the node positions and links creation/updates as required.
-      // Let's make sure that whenever nodes are created or deleted, we send the exact API calls!
       setSyncStatus("synced");
     } catch (err) {
       console.error("Failed to persist full project state", err);
@@ -247,7 +239,7 @@ export default function CanvasPage() {
 
   const handleCanvasMouseUp = async (e: React.MouseEvent) => {
     if (draggingNodeId && project) {
-      // Node drag finished! Store to history and send coordinates PUT API to backend
+      // Store the drag in history and persist the final coordinates.
       const draggedNode = project.nodes.find((n) => n.id === draggingNodeId);
       if (draggedNode) {
         pushStateToUndo(project);

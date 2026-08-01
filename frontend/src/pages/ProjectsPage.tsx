@@ -30,7 +30,7 @@ export default function ProjectsPage() {
   // Delete Confirmation State
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
-  // Fetch Projects from backend Express APIs
+  // Fetch projects from the Vercel Serverless API.
   const fetchProjects = async () => {
     try {
       setLoading(true);
