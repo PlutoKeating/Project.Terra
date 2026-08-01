@@ -7,7 +7,7 @@
 
 ## 1. 产品概述
 
-Terra 是一个**面向全栈系统架构设计的可视化编辑工具**。用户通过 Web 界面在画布上放置代表系统模块的节点、用语义化连线描述模块间的协作关系，并将设计保存为结构化 YAML 文件纳入 Git 版本控制。
+Terra 是一个**面向全栈系统架构设计的可视化编辑工具**。用户通过 Web 界面在画布上放置代表系统模块的节点、用语义化连线描述模块间的协作关系。运行时数据持久化到 Supabase PostgreSQL；设计可导出为结构化 YAML 文件纳入 Git 版本控制。
 
 核心价值：在"自由绘图"（Excalidraw）和"文本建模"（Mermaid）之间提供第三种设计媒介。
 
@@ -19,9 +19,9 @@ Terra 是一个**面向全栈系统架构设计的可视化编辑工具**。用�
 ### 1.2 技术前提
 
 - 前端通过 RESTful API 与后端通信（全部 JSON 格式）
-- 后端地址由环境变量 `VITE_API_BASE_URL` 指定，例如 `http://localhost:8000/api/v1`
-- 后端提供 Swagger 交互式文档：`http://localhost:8000/docs`
-- 前端技术栈不限，完全由你自主选择
+- API 地址由环境变量 `VITE_API_BASE_URL` 指定，默认 `/api/v1`
+- 生产 API 由 Vercel Python Function 承载，接口契约见 `docs/API.md`
+- 前端使用 React、Vite 和 Supabase Auth
 
 ---
 
@@ -42,7 +42,7 @@ Terra 是一个**面向全栈系统架构设计的可视化编辑工具**。用�
 
 用户可通过两种方式创建项目：
 - **空格创建**：输入项目名称和可选描述，得到空画布
-- **YAML 导入**：粘贴 .terra.yaml 格式的 YAML 文本，后端解析后生成完整项目
+- **YAML 导入**：粘贴 `.terra.yaml` 格式文本，服务端解析后写入 Supabase
 
 ### 2.2 设计画布（核心）
 
@@ -121,10 +121,9 @@ Terra 是一个**面向全栈系统架构设计的可视化编辑工具**。用�
 
 ### 3.1 基础信息
 
-- **Base URL**: `${VITE_API_BASE_URL}`，例如 `http://localhost:8000/api/v1`
+- **Base URL**: `${VITE_API_BASE_URL}`；生产为 `https://terra.arr2018.dpdns.org/api/v1`，本地为 `http://localhost:8000/api/v1`
 - **Content-Type**: `application/json`（所有请求和响应）
-- **Swagger**: `http://localhost:8000/docs`
-- **OpenAPI Spec**: `http://localhost:8000/openapi.json`
+- **Authentication**: 除健康检查外，生产请求携带 Supabase Bearer token
 
 ### 3.2 端点列表总览
 
@@ -231,7 +230,7 @@ Terra 是一个**面向全栈系统架构设计的可视化编辑工具**。用�
 
 #### `DELETE /projects/{project_id}`
 
-删除项目及其在磁盘上的持久化文件。
+删除项目及其在 Supabase 中的持久化文档。
 
 **响应** `200`:
 ```json
@@ -759,4 +758,4 @@ node_positions:
 
 ---
 
-*文档版本: 1.0 | 生成日期: 2025-07-02*
+*文档版本: 2.0 | 更新日期: 2026-08-01*

@@ -25,7 +25,7 @@
 如果任务涉及某个二级核心模块，Agent 必须阅读该模块目录文档，以 `xxx/docs/README.md` 和 `xxx/docs/ARCHITECTURE.md` 为主：
 
 - 前端任务：阅读 `frontend/docs/README.md`、`frontend/docs/ARCHITECTURE.md`
-- 后端任务：阅读 `backend/docs/README.md`、`backend/docs/ARCHITECTURE.md`
+- Serverless API 或领域核心任务：阅读 `docs/ARCHITECTURE.md`、`docs/API.md`
 
 如任务涉及模块启动、环境变量、脚本或部署，还必须阅读该模块的：
 
@@ -33,11 +33,7 @@
 - `xxx/.env.example`（如存在）
 - 相关脚本
 
-如后端任务涉及容器化部署，还必须阅读：
-
-- `backend/Dockerfile`
-- `backend/docker-compose.yml`
-- `backend/.dockerignore`
+如任务涉及生产部署，还必须阅读 `vercel.json`、`.env.example` 和 `supabase/schema.sql`。
 
 ### 1.3 阅读后的执行要求
 
@@ -64,7 +60,7 @@ Agent 的目标不是“尽快改完”，而是在本地完成可追踪、可�
 
 ### 3.1 必须本地提交所有变更
 
-对于任何本地文件的修改或增删，**必须全部进行git仓库同步检查**，理解是否应当将新增文件添加到gitignore/dockerignore，或者添加到commit
+对于任何本地文件的修改或增删，**必须全部进行 Git 仓库同步检查**，理解是否应当将新增文件添加到 `.gitignore`，或者添加到 commit。
 
 ```bash
 git diff 

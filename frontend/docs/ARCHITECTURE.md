@@ -1,3 +1,15 @@
 # Frontend Architecture
 
-The frontend is a Vite + React client. It uses the backend REST API for persistence, renders positioned nodes and SVG relationships on a grid canvas, and provides inspectors for node/connection metadata. Project export, deletion and validation are available from the project panel.
+## Runtime
+
+- React 19 rendered from `src/main.tsx`
+- Vite build and development server
+- HashRouter for static-host-compatible navigation
+- Supabase browser client in `src/lib/supabase.js`
+- Shared authenticated API wrapper in `src/apiFetch.ts`
+
+`App.tsx` owns route protection and global layout. `ProjectsPage.tsx` owns project management and YAML import. `CanvasPage.tsx` owns topology editing, persistence, validation, history, and export.
+
+The frontend never receives the Supabase service role key. Only `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` are exposed at build time.
+
+Production output is `frontend/dist` and is served by Vercel. Container deployment files and alternate application entry points are intentionally not part of the frontend architecture.

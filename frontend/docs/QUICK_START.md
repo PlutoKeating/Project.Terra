@@ -1,15 +1,34 @@
 # Frontend Quick Start
 
 ## Prerequisites
-- Node.js >= 20
 
-## Setup
+- Node.js 20+
+- Local Flask API on port 8000
+- Supabase public URL and anon key
+
+## Run
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-The client defaults to `/api/v1` for the Vercel deployment. Set `VITE_API_BASE_URL=http://localhost:8000/api/v1` for a separate local backend. When Supabase public variables are present, the client uses Supabase Auth and forwards the current session token to the API.
+The client opens at `http://localhost:3000`, uses `/api/v1`, and proxies `/api` to `http://localhost:8000`.
 
-Sign-up confirmation uses the current browser origin as its redirect target. Keep the Supabase Auth Site URL and Redirect URLs synchronized with the production custom domain and any supported preview or local origins.
+Set these variables through the root `.env` or deployment environment:
+
+```text
+VITE_API_BASE_URL=/api/v1
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key
+```
+
+Registration and password recovery use the current browser origin for redirects. Keep the Supabase Site URL and Redirect URLs synchronized with supported local, preview, and production origins.
+
+## Check
+
+```bash
+npm run lint
+npm run build
+```

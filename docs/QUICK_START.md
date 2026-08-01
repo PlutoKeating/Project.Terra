@@ -1,10 +1,22 @@
 # Terra Quick Start
 
 ## Prerequisites
-- Python >= 3.11 (backend)
-- Node.js >= 20 (frontend)
 
-## Vercel API
+- Python 3.11+
+- Node.js 20+
+- Supabase project
+
+## Supabase
+
+1. 在 Supabase SQL Editor 执行 `supabase/schema.sql`。
+2. 复制 `.env.example` 为 `.env`。
+3. 填写 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY`。
+4. 本地调试可保持 `SUPABASE_AUTH_REQUIRED=false`；生产必须设为 `true`。
+
+项目没有本地文件数据库。缺少 Supabase 服务端配置时，数据接口会返回 503。
+
+## API
+
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
@@ -12,27 +24,38 @@ pip install -r requirements.txt
 flask --app api.app run --port 8000
 ```
 
+验证：
+
+```bash
+curl http://localhost:8000/api/v1/health
+```
+
 ## Frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-前端默认访问 `/api/v1`；本地 Vite 开发时可通过 `VITE_API_BASE_URL=http://localhost:8000/api/v1` 指向后端。生产使用 `vercel.json` 将 `/` 指向前端、`/api/*` 指向 Python Serverless Function。
+Vite 默认运行在 `http://localhost:3000`，并将 `/api` 代理到 `http://localhost:8000`。前端默认 API Base URL 为 `/api/v1`。
 
-## Supabase
+## Verification
 
-复制 `.env.example`，配置 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`，并在 Supabase SQL Editor 执行 `supabase/schema.sql`。服务端只使用 service role key，绝不提交到仓库；浏览器只使用 anon key。生产环境将 `SUPABASE_AUTH_REQUIRED=true`，API 会通过 Supabase Auth 校验 Bearer token。
+```bash
+.venv/bin/python -m pytest -q
+cd frontend
+npm run lint
+npm run build
+```
 
-Supabase Auth 的 Site URL 必须设置为正式访问域名（当前为 `https://terra.arr2018.dpdns.org`），Redirect URLs 需要覆盖正式域名、Vercel 预览域名和本地开发地址。前端注册请求会同时使用当前页面 origin 作为 `emailRedirectTo`，避免确认邮件回退到 Supabase 默认的 localhost 地址。
+## Production
 
-### Production Auth email
+- Vercel Production 分支：`main`
+- 固定域名：`https://terra.arr2018.dpdns.org`
+- `vercel.json` 同时构建前端并路由 Python Function
+- Supabase Site URL 使用固定域名
+- Redirect URLs 包含固定域名、允许的 Vercel 预览域名和本地地址
+- Custom SMTP 使用平台密钥保存授权信息；仓库中不记录真实凭据
 
-生产环境必须在 Supabase Authentication 设置中启用 Custom SMTP，并配置支持 SSL 的外部 SMTP 服务。当前部署使用端口 `465`，发件地址必须与 SMTP 账号一致；SMTP 授权码仅保存在平台密钥配置中，不写入仓库或 `.env.example`。
-
-建议保留以下限制：
-
-- 每个地址的连续邮件请求至少间隔 60 秒。
-- 项目邮件总速率按实际用户规模设置；当前生产基线为每小时 30 封。
-- 注册确认与密码恢复链接必须回到 `https://terra.arr2018.dpdns.org/`。
+推送 `main` 后，等待 Vercel Production 部署成功，再通过固定域名验证根页面、`/api/v1/health` 和未授权接口的 401 行为。

@@ -1,20 +1,12 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# Terra Frontend
 
-# Run and deploy your AI Studio app
+React + Vite client for Terra. It provides Supabase authentication, project management, architecture canvas editing, validation, and YAML/JSON import/export.
 
-This contains everything you need to run your app locally.
+```bash
+npm install
+npm run dev
+```
 
-View your app in AI Studio: https://ai.studio/apps/231ee493-cf45-4edd-80de-ea915f61861a
+The development server runs on port 3000 and proxies `/api` to the local Flask API on port 8000. Production is built by Vercel from the repository root.
 
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+See [`docs/README.md`](docs/README.md) and [`../docs/QUICK_START.md`](../docs/QUICK_START.md).
