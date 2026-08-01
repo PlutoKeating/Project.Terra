@@ -14,6 +14,11 @@ from terra_engine.services import export_service, project_service, validator_ser
 app = Flask(__name__)
 
 
+@app.errorhandler(RuntimeError)
+def service_unavailable(exc):
+    return jsonify(detail=str(exc)), 503
+
+
 def auth_required():
     return os.getenv("SUPABASE_AUTH_REQUIRED", "false").lower() == "true"
 

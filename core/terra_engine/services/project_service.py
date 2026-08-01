@@ -1,20 +1,6 @@
-import os
 import yaml
 from terra_engine.models.project import Project, Node, Connection
 from terra_engine.services import supabase_service
-
-
-def _data_dir() -> str:
-    return os.environ.get("TERRA_DATA_DIR", "./data")
-
-
-def _ensure_data_dir():
-    os.makedirs(_data_dir(), exist_ok=True)
-
-
-def _project_path(project_id: str) -> str:
-    return os.path.join(_data_dir(), f"{project_id}.yaml")
-
 
 def _project_to_dict(project: Project) -> dict:
     return {
@@ -31,6 +17,8 @@ def _project_to_dict(project: Project) -> dict:
 
 
 def _dict_to_project(data: dict) -> Project:
+    if not data:
+        return None
     positions = data.get("node_positions", {})
     nodes = []
     for raw_node in data.get("nodes", []):
@@ -38,11 +26,13 @@ def _dict_to_project(data: dict) -> Project:
         if "position" not in node and node.get("id") in positions:
             node["position"] = positions[node["id"]]
         nodes.append(Node.model_validate(node))
+    project_data = data["project"]
+    identity = {"id": project_data["id"]} if project_data.get("id") else {}
     return Project(
-        id=data["project"]["id"],
-        name=data["project"]["name"],
-        description=data["project"].get("description"),
-        version=data["project"].get("version", "0.1.0"),
+        **identity,
+        name=project_data["name"],
+        description=project_data.get("description"),
+        version=project_data.get("version", "0.1.0"),
         nodes=nodes,
         connections=[Connection.model_validate(c) for c in data.get("connections", [])],
         metadata=data.get("metadata", {}),
@@ -50,7 +40,6 @@ def _dict_to_project(data: dict) -> Project:
 
 
 def create_project(name: str, description: str | None = None, yaml_content: str | None = None, metadata: dict | None = None) -> Project:
-    _ensure_data_dir()
     if yaml_content:
         data = yaml.safe_load(yaml_content)
         project = _dict_to_project(data)
@@ -61,29 +50,12 @@ def create_project(name: str, description: str | None = None, yaml_content: str 
 
 
 def get_project(project_id: str) -> Project | None:
-    if supabase_service.enabled():
-        data = supabase_service.get(project_id)
-        return _dict_to_project(data) if data else None
-    path = _project_path(project_id)
-    if not os.path.exists(path):
-        return None
-    with open(path, "r") as f:
-        data = yaml.safe_load(f)
+    data = supabase_service.get(project_id)
     return _dict_to_project(data)
 
 
 def list_projects() -> list[Project]:
-    if supabase_service.enabled():
-        return [_dict_to_project(data) for data in supabase_service.list_all()]
-    _ensure_data_dir()
-    projects = []
-    for fname in os.listdir(_data_dir()):
-        if fname.endswith(".yaml"):
-            pid = fname[:-5]
-            proj = get_project(pid)
-            if proj:
-                projects.append(proj)
-    return projects
+    return [_dict_to_project(data) for data in supabase_service.list_all()]
 
 
 def update_project(project_id: str, name: str | None = None, description: str | None = None, metadata: dict | None = None) -> Project | None:
@@ -101,26 +73,14 @@ def update_project(project_id: str, name: str | None = None, description: str | 
 
 
 def delete_project(project_id: str) -> bool:
-    if supabase_service.enabled():
-        if get_project(project_id) is None:
-            return False
-        supabase_service.delete(project_id)
-        return True
-    path = _project_path(project_id)
-    if os.path.exists(path):
-        os.remove(path)
-        return True
-    return False
+    if get_project(project_id) is None:
+        return False
+    supabase_service.delete(project_id)
+    return True
 
 
 def _save_project(project: Project):
-    if supabase_service.enabled():
-        supabase_service.save(_project_to_dict(project))
-        return
-    _ensure_data_dir()
-    path = _project_path(project.id)
-    with open(path, "w") as f:
-        yaml.dump(_project_to_dict(project), f, allow_unicode=True, sort_keys=False)
+    supabase_service.save(_project_to_dict(project))
 
 
 def add_node(project_id: str, node: Node) -> Project | None:

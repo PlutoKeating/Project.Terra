@@ -4,15 +4,20 @@ from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 
-def enabled() -> bool:
-    return bool(os.getenv("SUPABASE_URL") and os.getenv("SUPABASE_SERVICE_ROLE_KEY"))
+def _settings() -> tuple[str, str]:
+    url = os.getenv("SUPABASE_URL")
+    service_role_key = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    if not url or not service_role_key:
+        raise RuntimeError("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required")
+    return url.rstrip("/"), service_role_key
 
 
 def _request(method: str, path: str, payload=None):
-    url = os.environ["SUPABASE_URL"].rstrip("/") + "/rest/v1/" + path
+    base_url, service_role_key = _settings()
+    url = base_url + "/rest/v1/" + path
     headers = {
-        "apikey": os.environ["SUPABASE_SERVICE_ROLE_KEY"],
-        "Authorization": "Bearer " + os.environ["SUPABASE_SERVICE_ROLE_KEY"],
+        "apikey": service_role_key,
+        "Authorization": "Bearer " + service_role_key,
         "Content-Type": "application/json",
         "Prefer": "return=representation,resolution=merge-duplicates",
     }
@@ -36,7 +41,8 @@ def list_all():
 
 
 def save(project: dict):
-    _request("POST", "terra_projects", {"id": project["id"], "name": project["name"], "document": project})
+    identity = project["project"]
+    _request("POST", "terra_projects", {"id": identity["id"], "name": identity["name"], "document": project})
 
 
 def delete(project_id: str):

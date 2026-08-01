@@ -11,8 +11,6 @@ node_modules/
 .pytest_cache/
 .agents/
 .mimocode/
-data/
-backend/data/
 frontend/node_modules/
 frontend/dist/
 supabase/.temp/

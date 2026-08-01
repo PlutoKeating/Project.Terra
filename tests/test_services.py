@@ -1,22 +1,6 @@
-import pytest
-import os
-import tempfile
 from terra_engine.models.enums import NodeType, CommunicationMode, Protocol
 from terra_engine.models.project import Node, Connection, Project
 from terra_engine.services import project_service
-
-
-@pytest.fixture(autouse=True)
-def temp_data_dir():
-    with tempfile.TemporaryDirectory() as tmpdir:
-        old = os.environ.get("TERRA_DATA_DIR")
-        os.environ["TERRA_DATA_DIR"] = tmpdir
-        yield tmpdir
-        if old:
-            os.environ["TERRA_DATA_DIR"] = old
-        else:
-            del os.environ["TERRA_DATA_DIR"]
-
 
 class TestProjectCRUD:
     def test_create_and_get(self):
@@ -189,7 +173,10 @@ class TestExportService:
         assert imported.nodes[0].position.x == 42
         assert imported.nodes[0].position.y == 84
 
-    def test_data_dir_is_read_at_runtime(self, monkeypatch, tmp_path):
-        monkeypatch.setenv("TERRA_DATA_DIR", str(tmp_path))
-        p = project_service.create_project("Runtime dir")
-        assert (tmp_path / f"{p.id}.yaml").exists()
+    def test_yaml_import_generates_id_when_omitted(self):
+        imported = project_service.create_project(
+            "ignored",
+            yaml_content="project:\n  name: Imported\nnodes: []\nconnections: []\n",
+        )
+        assert imported.id
+        assert imported.name == "Imported"
