@@ -30,7 +30,7 @@ YAML 是交换和版本控制格式，不是运行时数据库。生产与本地
 前置要求：Python 3.11+、Node.js 20+、一个已执行 [`supabase/schema.sql`](supabase/schema.sql) 的 Supabase 项目。
 
 ```bash
-git clone https://github.com/PlutoKeating/Project.Terra.git
+git clone git@github.com:PlutoKeating/Project.Terra.git
 cd Project.Terra
 cp .env.example .env
 
