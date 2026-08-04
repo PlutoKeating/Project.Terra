@@ -4,6 +4,11 @@ import { designSystem } from "../designSystem";
 import RainbowStrip from "../components/RainbowStrip";
 import { supabase } from "../lib/supabase";
 
+function readableAuthError(error: unknown, fallback: string) {
+  const message = typeof (error as any)?.message === "string" ? (error as any).message.trim() : "";
+  return message && message !== "{}" && message !== "[object Object]" ? message : fallback;
+}
+
 export default function AuthPage() {
   const navigate = useNavigate();
   const [mode, setMode] = useState<"signIn" | "signUp" | "forgot" | "recovery">(
@@ -44,14 +49,17 @@ export default function AuthPage() {
     if (mode === "forgot") {
       const result = await supabase.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl });
       setBusy(false);
-      if (result.error) { setError(result.error.message); return; }
+      if (result.error) {
+        setError(readableAuthError(result.error, "恢复邮件发送失败，请稍后重试或联系管理员检查邮件服务配置。"));
+        return;
+      }
       setMessage("密码恢复邮件已发送，请检查邮箱并打开恢复链接。");
       return;
     }
     if (mode === "recovery") {
       const result = await supabase.auth.updateUser({ password });
       setBusy(false);
-      if (result.error) { setError(result.error.message); return; }
+      if (result.error) { setError(readableAuthError(result.error, "密码更新失败，请重新打开恢复链接。")); return; }
       sessionStorage.removeItem("terra-password-recovery");
       setMessage("密码已更新，正在进入工作区。");
       navigate("/");
@@ -61,7 +69,7 @@ export default function AuthPage() {
       ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: authRedirectUrl } })
       : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
-    if (result.error) { setError(result.error.message); return; }
+    if (result.error) { setError(readableAuthError(result.error, "认证请求失败，请检查输入后重试。")); return; }
     if (mode === "signUp" && !result.data.session) { setMessage("注册成功，请检查邮箱完成验证"); return; }
     navigate("/");
   };

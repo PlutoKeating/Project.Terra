@@ -28,6 +28,8 @@ Registration and password recovery use the current browser origin for redirects.
 
 Password recovery callbacks are detected before HashRouter navigation and redirected to the new-password form. Production acceptance must exercise this through the fixed production domain.
 
+The recovery request displays a stable user-facing error when the external SMTP provider rejects delivery. SMTP credentials remain platform-managed and must be repaired in Supabase when Auth logs report a provider authentication failure.
+
 ## Check
 
 ```bash

@@ -60,4 +60,6 @@ npm run build
 - Custom SMTP 使用平台密钥保存授权信息；仓库中不记录真实凭据
 - `terra_projects.owner_id` 和严格 RLS policy 已启用，API 访问按当前 Supabase 用户隔离
 
+生产验收必须实际调用注册与密码恢复邮件接口。若 Supabase Auth 日志出现 SMTP `535 authentication failed`，需要在 Supabase Auth SMTP 设置中替换有效授权码；代码和仓库不保存或生成邮件授权凭据。
+
 推送 `main` 后，等待 Vercel Production 部署成功，再通过固定域名验证根页面、`/api/v1/health` 和未授权接口的 401 行为。
