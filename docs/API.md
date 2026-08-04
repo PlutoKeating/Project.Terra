@@ -5,7 +5,7 @@
 - Production: `https://terra.arr2018.dpdns.org/api/v1`
 - Local: `http://localhost:8000/api/v1`
 
-除 `GET /health` 外，生产接口要求 `Authorization: Bearer <supabase-access-token>`。请求和响应使用 JSON，本文件是接口契约。
+除 `GET /health` 外，生产接口要求 `Authorization: Bearer <supabase-access-token>`。API 使用 token 对应的 Supabase 用户作为项目 owner；项目列表和所有项目子资源只能由其 owner 访问。请求和响应使用 JSON，本文件是接口契约。
 
 ## Endpoints
 
@@ -43,7 +43,7 @@ Content-Type: application/json
 }
 ```
 
-也可在创建时传入 `yaml_content`。YAML 会被解析为项目并写入 Supabase；若 YAML 中没有项目 ID，服务端自动生成。
+也可在创建时传入 `yaml_content`。YAML 会被解析为项目并写入 Supabase。导入文件中的项目 ID 仅是交换格式信息，服务端始终生成新的数据库项目 ID，避免覆盖其他用户或既有项目。
 
 创建节点：
 
@@ -75,7 +75,7 @@ Content-Type: application/json
 - `200`：成功
 - `400`：不支持的导出格式
 - `401`：缺少或无效的 Supabase session
-- `404`：项目、节点或连线不存在
+- `404`：项目、节点或连线不存在，或当前用户不是该项目 owner
 - `422`：模型、YAML 或连接引用校验失败
 - `503`：服务端缺少 Supabase 配置或持久化服务不可用
 

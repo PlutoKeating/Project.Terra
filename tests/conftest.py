@@ -12,12 +12,29 @@ def supabase_memory_store(monkeypatch):
     from terra_engine.services import supabase_service
 
     documents = {}
-    monkeypatch.setattr(supabase_service, "get", lambda project_id: documents.get(project_id))
-    monkeypatch.setattr(supabase_service, "list_all", lambda: list(documents.values()))
-    monkeypatch.setattr(
-        supabase_service,
-        "save",
-        lambda document: documents.__setitem__(document["project"]["id"], document),
-    )
-    monkeypatch.setattr(supabase_service, "delete", lambda project_id: documents.pop(project_id, None))
+
+    def get(project_id, owner_id=None):
+        record = documents.get(project_id)
+        if not record or (owner_id and record["owner_id"] != owner_id):
+            return None
+        return record["document"]
+
+    def list_all(owner_id=None):
+        return [
+            record["document"] for record in documents.values()
+            if not owner_id or record["owner_id"] == owner_id
+        ]
+
+    def save(document, owner_id=None):
+        documents[document["project"]["id"]] = {"owner_id": owner_id, "document": document}
+
+    def delete(project_id, owner_id=None):
+        record = documents.get(project_id)
+        if record and (not owner_id or record["owner_id"] == owner_id):
+            documents.pop(project_id)
+
+    monkeypatch.setattr(supabase_service, "get", get)
+    monkeypatch.setattr(supabase_service, "list_all", list_all)
+    monkeypatch.setattr(supabase_service, "save", save)
+    monkeypatch.setattr(supabase_service, "delete", delete)
     return documents

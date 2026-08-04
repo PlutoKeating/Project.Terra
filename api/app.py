@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 import httpx
-from flask import Flask, jsonify, request
+from flask import Flask, g, jsonify, request
 from pydantic import ValidationError
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "core"))
@@ -23,24 +23,37 @@ def auth_required():
     return os.getenv("SUPABASE_AUTH_REQUIRED", "false").lower() == "true"
 
 
-def authorized():
+def authenticated_user_id():
     authorization = request.headers.get("Authorization", "")
     if not authorization.lower().startswith("bearer "):
-        return False
+        return None
     if not os.getenv("SUPABASE_URL") or not os.getenv("SUPABASE_ANON_KEY"):
-        return False
+        return None
     response = httpx.get(
         os.environ["SUPABASE_URL"].rstrip("/") + "/auth/v1/user",
         headers={"apikey": os.environ["SUPABASE_ANON_KEY"], "Authorization": authorization},
         timeout=5,
     )
-    return response.is_success
+    if not response.is_success:
+        return None
+    return response.json().get("id")
 
 
 @app.before_request
 def protect_api():
-    if auth_required() and request.path != "/api/v1/health" and not authorized():
-        return jsonify(detail="Authentication required"), 401
+    if request.path == "/api/v1/health":
+        return None
+    if auth_required():
+        user_id = authenticated_user_id()
+        if not user_id:
+            return jsonify(detail="Authentication required"), 401
+        g.auth_user_id = user_id
+    else:
+        g.auth_user_id = None
+
+
+def owner_id():
+    return getattr(g, "auth_user_id", None)
 
 
 def body(model):
@@ -58,10 +71,12 @@ def health():
 @app.route("/api/v1/projects", methods=["GET", "POST"])
 def projects():
     if request.method == "GET":
-        return jsonify([p.model_dump(mode="json") for p in project_service.list_projects()])
+        return jsonify([p.model_dump(mode="json") for p in project_service.list_projects(owner_id())])
     data = request.get_json(force=True) or {}
     try:
-        project = project_service.create_project(data.get("name", ""), data.get("description"), data.get("yaml_content"), data.get("metadata"))
+        project = project_service.create_project(
+            data.get("name", ""), data.get("description"), data.get("yaml_content"), data.get("metadata"), owner_id()
+        )
         return jsonify(project.model_dump(mode="json"))
     except (ValueError, TypeError, KeyError) as exc:
         return jsonify(detail=f"Invalid project YAML: {exc}"), 422
@@ -69,22 +84,24 @@ def projects():
 
 @app.route("/api/v1/projects/<project_id>", methods=["GET", "PUT", "DELETE"])
 def project(project_id):
-    current = project_service.get_project(project_id)
+    current = project_service.get_project(project_id, owner_id())
     if current is None:
         return jsonify(detail="Project not found"), 404
     if request.method == "GET":
         return jsonify(current.model_dump(mode="json"))
     if request.method == "DELETE":
-        project_service.delete_project(project_id)
+        project_service.delete_project(project_id, owner_id())
         return jsonify(status="deleted")
     data = request.get_json(force=True) or {}
-    updated = project_service.update_project(project_id, data.get("name"), data.get("description"), data.get("metadata"))
+    updated = project_service.update_project(
+        project_id, data.get("name"), data.get("description"), data.get("metadata"), owner_id()
+    )
     return jsonify(updated.model_dump(mode="json"))
 
 
 @app.get("/api/v1/projects/<project_id>/export")
 def export_project(project_id):
-    current = project_service.get_project(project_id)
+    current = project_service.get_project(project_id, owner_id())
     if current is None:
         return jsonify(detail="Project not found"), 404
     format_name = request.args.get("format", "yaml")
@@ -96,7 +113,7 @@ def export_project(project_id):
 
 
 def collection(project_id, kind):
-    current = project_service.get_project(project_id)
+    current = project_service.get_project(project_id, owner_id())
     if current is None:
         return jsonify(detail="Project not found"), 404
     model = Node if kind == "nodes" else Connection
@@ -110,9 +127,9 @@ def collection(project_id, kind):
         ids = {n.id for n in current.nodes}
         if value.source_node_id not in ids or value.target_node_id not in ids:
             return jsonify(detail="Connection references an unknown node"), 422
-        updated = project_service.add_connection(project_id, value)
+        updated = project_service.add_connection(project_id, value, owner_id())
     else:
-        updated = project_service.add_node(project_id, value)
+        updated = project_service.add_node(project_id, value, owner_id())
     return jsonify((updated.connections if kind == "connections" else updated.nodes)[-1].model_dump(mode="json"))
 
 
@@ -128,7 +145,7 @@ def connections(project_id):
 
 @app.route("/api/v1/projects/<project_id>/nodes/<node_id>", methods=["GET", "PUT", "DELETE"])
 def node_item(project_id, node_id):
-    current = project_service.get_project(project_id)
+    current = project_service.get_project(project_id, owner_id())
     if current is None:
         return jsonify(detail="Project not found"), 404
     existing = next((value for value in current.nodes if value.id == node_id), None)
@@ -137,18 +154,18 @@ def node_item(project_id, node_id):
     if request.method == "GET":
         return jsonify(existing.model_dump(mode="json"))
     if request.method == "DELETE":
-        project_service.delete_node(project_id, node_id)
+        project_service.delete_node(project_id, node_id, owner_id())
         return jsonify(status="deleted")
     value, error = body(Node)
     if error:
         return error
-    updated = project_service.update_node(project_id, node_id, value)
+    updated = project_service.update_node(project_id, node_id, value, owner_id())
     return jsonify(next(value for value in updated.nodes if value.id == node_id).model_dump(mode="json"))
 
 
 @app.route("/api/v1/projects/<project_id>/connections/<connection_id>", methods=["GET", "PUT", "DELETE"])
 def connection_item(project_id, connection_id):
-    current = project_service.get_project(project_id)
+    current = project_service.get_project(project_id, owner_id())
     if current is None:
         return jsonify(detail="Project not found"), 404
     existing = next((value for value in current.connections if value.id == connection_id), None)
@@ -157,7 +174,7 @@ def connection_item(project_id, connection_id):
     if request.method == "GET":
         return jsonify(existing.model_dump(mode="json"))
     if request.method == "DELETE":
-        project_service.delete_connection(project_id, connection_id)
+        project_service.delete_connection(project_id, connection_id, owner_id())
         return jsonify(status="deleted")
     value, error = body(Connection)
     if error:
@@ -165,13 +182,13 @@ def connection_item(project_id, connection_id):
     ids = {node.id for node in current.nodes}
     if value.source_node_id not in ids or value.target_node_id not in ids:
         return jsonify(detail="Connection references an unknown node"), 422
-    updated = project_service.update_connection(project_id, connection_id, value)
+    updated = project_service.update_connection(project_id, connection_id, value, owner_id())
     return jsonify(next(value for value in updated.connections if value.id == connection_id).model_dump(mode="json"))
 
 
 @app.post("/api/v1/projects/<project_id>/validate")
 def validate(project_id):
-    current = project_service.get_project(project_id)
+    current = project_service.get_project(project_id, owner_id())
     if current is None:
         return jsonify(detail="Project not found"), 404
     return jsonify([v.model_dump(mode="json") for v in validator_service.validate_project(current)])

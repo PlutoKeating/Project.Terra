@@ -1,5 +1,6 @@
 import json
 import os
+from urllib.parse import quote
 from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
@@ -30,20 +31,27 @@ def _request(method: str, path: str, payload=None):
         raise RuntimeError(f"Supabase request failed: {exc.code}") from exc
 
 
-def get(project_id: str):
-    rows = _request("GET", f"terra_projects?id=eq.{project_id}&select=document")
+def _owner_filter(owner_id: str | None) -> str:
+    return f"&owner_id=eq.{quote(owner_id)}" if owner_id else ""
+
+
+def get(project_id: str, owner_id: str | None = None):
+    rows = _request("GET", f"terra_projects?id=eq.{quote(project_id)}{_owner_filter(owner_id)}&select=document")
     return rows[0]["document"] if rows else None
 
 
-def list_all():
-    rows = _request("GET", "terra_projects?select=document&order=updated_at.desc")
+def list_all(owner_id: str | None = None):
+    rows = _request("GET", f"terra_projects?select=document{_owner_filter(owner_id)}&order=updated_at.desc")
     return [row["document"] for row in rows or []]
 
 
-def save(project: dict):
+def save(project: dict, owner_id: str | None = None):
     identity = project["project"]
-    _request("POST", "terra_projects", {"id": identity["id"], "name": identity["name"], "document": project})
+    payload = {"id": identity["id"], "name": identity["name"], "document": project}
+    if owner_id:
+        payload["owner_id"] = owner_id
+    _request("POST", "terra_projects", payload)
 
 
-def delete(project_id: str):
-    _request("DELETE", f"terra_projects?id=eq.{project_id}")
+def delete(project_id: str, owner_id: str | None = None):
+    _request("DELETE", f"terra_projects?id=eq.{quote(project_id)}{_owner_filter(owner_id)}")

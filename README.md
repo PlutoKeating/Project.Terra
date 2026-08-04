@@ -20,7 +20,7 @@ Terra 是一种可视化架构描述语言。画布中的节点和连线都带�
 - 节点与连线增删改、属性编辑、画布定位和 SVG 关系渲染
 - 循环依赖、孤立节点、完整性和协议一致性验证
 - YAML/JSON 导入与导出
-- Supabase Auth、PostgreSQL JSONB 持久化和自定义 SMTP 邮件
+- Supabase Auth、按用户隔离的 PostgreSQL JSONB 持久化和自定义 SMTP 邮件
 - Vercel 单项目部署：React 静态前端位于 `/`，Flask Serverless API 位于 `/api/*`
 
 YAML 是交换和版本控制格式，不是运行时数据库。生产与本地开发都使用 Supabase 保存项目。
@@ -88,7 +88,7 @@ Vercel /api/* → Flask WSGI API → Terra domain services
 cd frontend && npm run lint && npm run build
 ```
 
-当前基线为 45 项 Python 测试通过，前端 TypeScript 检查和 Vite 生产构建通过。
+当前基线为 46 项 Python 测试通过，前端 TypeScript 检查和 Vite 生产构建通过。
 
 ## 生产
 

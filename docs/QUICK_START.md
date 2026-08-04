@@ -9,6 +9,7 @@
 ## Supabase
 
 1. 在 Supabase SQL Editor 执行 `supabase/schema.sql`。
+   已存在的项目还需按顺序执行 `supabase/migrations/` 中尚未应用的迁移。
 2. 复制 `.env.example` 为 `.env`。
 3. 填写 `SUPABASE_URL`、`SUPABASE_ANON_KEY`、`SUPABASE_SERVICE_ROLE_KEY`、`VITE_SUPABASE_URL` 和 `VITE_SUPABASE_ANON_KEY`。
 4. 本地调试可保持 `SUPABASE_AUTH_REQUIRED=false`；生产必须设为 `true`。
@@ -57,5 +58,6 @@ npm run build
 - Supabase Site URL 使用固定域名
 - Redirect URLs 包含固定域名、允许的 Vercel 预览域名和本地地址
 - Custom SMTP 使用平台密钥保存授权信息；仓库中不记录真实凭据
+- `terra_projects.owner_id` 和严格 RLS policy 已启用，API 访问按当前 Supabase 用户隔离
 
 推送 `main` 后，等待 Vercel Production 部署成功，再通过固定域名验证根页面、`/api/v1/health` 和未授权接口的 401 行为。
