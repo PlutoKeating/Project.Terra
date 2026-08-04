@@ -94,6 +94,8 @@ export default function CanvasPage() {
   // Refs
   const canvasViewportRef = useRef<HTMLDivElement>(null);
   const canvasStageRef = useRef<HTMLDivElement>(null);
+  const nodeDragMovedRef = useRef(false);
+  const nodeDragStartProjectRef = useRef<Project | null>(null);
 
   // ==================== INITIAL LOAD ====================
 
@@ -180,6 +182,8 @@ export default function CanvasPage() {
     }
 
     setDraggingNodeId(node.id);
+    nodeDragMovedRef.current = false;
+    nodeDragStartProjectRef.current = project ? JSON.parse(JSON.stringify(project)) : null;
     // Track offset where mouse clicked relative to node position x/y
     // We adjust for current zoom
     const rect = canvasViewportRef.current?.getBoundingClientRect();
@@ -202,12 +206,16 @@ export default function CanvasPage() {
     if (draggingNodeId && project) {
       const updatedNodes = project.nodes.map((node) => {
         if (node.id === draggingNodeId) {
+          const nextPosition = {
+            x: Math.round(relativeMouseX - dragStartOffset.x),
+            y: Math.round(relativeMouseY - dragStartOffset.y),
+          };
+          if (nextPosition.x !== node.position.x || nextPosition.y !== node.position.y) {
+            nodeDragMovedRef.current = true;
+          }
           return {
             ...node,
-            position: {
-              x: Math.round(relativeMouseX - dragStartOffset.x),
-              y: Math.round(relativeMouseY - dragStartOffset.y),
-            },
+            position: nextPosition,
           };
         }
         return node;
@@ -239,10 +247,12 @@ export default function CanvasPage() {
 
   const handleCanvasMouseUp = async (e: React.MouseEvent) => {
     if (draggingNodeId && project) {
-      // Store the drag in history and persist the final coordinates.
+      // A selection click must not issue a stale PUT. Persist only after movement.
       const draggedNode = project.nodes.find((n) => n.id === draggingNodeId);
-      if (draggedNode) {
-        pushStateToUndo(project);
+      if (draggedNode && nodeDragMovedRef.current) {
+        if (nodeDragStartProjectRef.current) {
+          pushStateToUndo(nodeDragStartProjectRef.current);
+        }
 
         try {
           setSyncStatus("saving");
@@ -259,6 +269,8 @@ export default function CanvasPage() {
         }
       }
       setDraggingNodeId(null);
+      nodeDragMovedRef.current = false;
+      nodeDragStartProjectRef.current = null;
     }
 
     if (isPanning) {
@@ -379,10 +391,10 @@ export default function CanvasPage() {
     }
   };
 
-  const updateNodeProperties = async (nodeId: string, label: string, description: string | null, properties: any) => {
-    if (!project) return;
+  const updateNodeProperties = async (nodeId: string, label: string, description: string | null, properties: any): Promise<boolean> => {
+    if (!project) return false;
     const targetNode = project.nodes.find((n) => n.id === nodeId);
-    if (!targetNode) return;
+    if (!targetNode) return false;
 
     pushStateToUndo(project);
 
@@ -409,9 +421,12 @@ export default function CanvasPage() {
       });
       if (!res.ok) throw new Error("保存节点属性失败");
       setSyncStatus("synced");
+      return true;
     } catch (err) {
       console.error(err);
+      setProject(project);
       setSyncStatus("unsaved");
+      return false;
     }
   };
 
@@ -518,10 +533,10 @@ export default function CanvasPage() {
     description: string | null,
     format: string,
     inlineSchemaText: string
-  ) => {
-    if (!project) return;
+  ): Promise<boolean> => {
+    if (!project) return false;
     const targetConn = project.connections.find((c) => c.id === connectionId);
-    if (!targetConn) return;
+    if (!targetConn) return false;
 
     pushStateToUndo(project);
 
@@ -565,9 +580,12 @@ export default function CanvasPage() {
       });
       if (!res.ok) throw new Error("保存连线属性失败");
       setSyncStatus("synced");
+      return true;
     } catch (err) {
       console.error(err);
+      setProject(project);
       setSyncStatus("unsaved");
+      return false;
     }
   };
 
@@ -1403,7 +1421,7 @@ export default function CanvasPage() {
 
 interface NodeInspectorProps {
   node: Node;
-  onUpdate: (id: string, label: string, description: string | null, properties: any) => void;
+  onUpdate: (id: string, label: string, description: string | null, properties: any) => Promise<boolean>;
   onDelete: () => void;
   onLink: () => void;
 }
@@ -1420,7 +1438,7 @@ function NodeInspector({ node, onUpdate, onDelete, onLink }: NodeInspectorProps)
     setTechStack(node.properties?.tech_stack || node.properties?.engine || "");
   }, [node]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const props: any = {};
     if (node.type === "database" || node.type === "cache") {
@@ -1428,8 +1446,8 @@ function NodeInspector({ node, onUpdate, onDelete, onLink }: NodeInspectorProps)
     } else {
       props.tech_stack = techStack;
     }
-    onUpdate(node.id, label, description, props);
-    alert("节点属性已更新并同步到服务端！");
+    const saved = await onUpdate(node.id, label, description, props);
+    alert(saved ? "节点属性已更新并同步到服务端！" : "节点属性保存失败，请重试。");
   };
 
   return (
@@ -1549,7 +1567,7 @@ interface ConnectionInspectorProps {
     description: string | null,
     format: string,
     inlineSchema: string
-  ) => void;
+  ) => Promise<boolean>;
   onDelete: () => void;
 }
 
@@ -1579,10 +1597,10 @@ function ConnectionInspector({ connection, nodes, onUpdate, onDelete }: Connecti
     );
   }, [connection]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(connection.id, mode, protocol, description, schemaFormat, schemaJsonText);
-    alert("调用链路属性已同步保存到服务端！");
+    const saved = await onUpdate(connection.id, mode, protocol, description, schemaFormat, schemaJsonText);
+    alert(saved ? "调用链路属性已同步保存到服务端！" : "调用链路保存失败，请重试。");
   };
 
   return (
