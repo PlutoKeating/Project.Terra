@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { Trash2, AlertCircle, Plus, Upload, Code, BookOpen, ExternalLink, Activity } from "lucide-react";
 import { designSystem } from "../designSystem";
 import { Project } from "../types";
@@ -15,6 +15,7 @@ const RETRO_IMAGES = [
 ];
 
 export default function ProjectsPage() {
+  const [searchParams] = useSearchParams();
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -29,6 +30,10 @@ export default function ProjectsPage() {
 
   // Delete Confirmation State
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
+  const searchQuery = (searchParams.get("q") || "").trim().toLowerCase();
+  const visibleProjects = searchQuery
+    ? projects.filter((project) => `${project.name} ${project.description || ""}`.toLowerCase().includes(searchQuery))
+    : projects;
 
   // Fetch projects from the Vercel Serverless API.
   const fetchProjects = async () => {
@@ -262,7 +267,7 @@ node_positions:
       {!loading && !error && (
         <div className="space-y-12" id="dashboard-primary-container">
           
-          {projects.length === 0 ? (
+          {visibleProjects.length === 0 ? (
             // Empty State
             <div
               className="p-12 text-center border-2 border-dashed bg-white flex flex-col items-center justify-center py-20"
@@ -272,7 +277,7 @@ node_positions:
               <Code className="text-gray-300 w-12 h-12 mb-4" />
               <h3 className="text-lg font-bold font-courier">尚无任何架构项目</h3>
               <p className="font-mono text-xs text-gray-500 max-w-md mx-auto mt-2">
-                你可以通过空白面板创建全新的拓扑规划，或者直接导入现有的 .terra.yaml 设计文件。
+                {searchQuery ? `没有匹配 “${searchParams.get("q") || ""}” 的项目。` : "你可以通过空白面板创建全新的拓扑规划，或者直接导入现有的 .terra.yaml 设计文件。"}
               </p>
               <div className="mt-6 flex flex-wrap gap-4 justify-center">
                 <button
@@ -307,7 +312,7 @@ node_positions:
                 <div className="lg:col-span-2 space-y-6" id="dashboard-featured-column">
                   {/* Partition projects into Active and Archieved lists */}
                   {(() => {
-                    const activeProjects = projects.filter((p) => p.metadata?.isActiveWorkspace === true);
+                    const activeProjects = visibleProjects.filter((p) => p.metadata?.isActiveWorkspace === true);
                     return activeProjects.length > 0 ? (
                       activeProjects.map((proj, idx) => {
                         const randomImg = RETRO_IMAGES[idx % RETRO_IMAGES.length];
@@ -471,7 +476,7 @@ node_positions:
 
               {/* Sub projects list (Grid) spanning full container width with dynamic responsive adaptive columns */}
               {(() => {
-                const storedProjects = projects.filter((p) => p.metadata?.isActiveWorkspace !== true);
+                const storedProjects = visibleProjects.filter((p) => p.metadata?.isActiveWorkspace !== true);
                 return (
                   <div className="w-full pt-4" id="stored-architectures-section">
                     <h3 className="font-mono text-xs uppercase tracking-widest text-gray-500 mb-6 font-bold">

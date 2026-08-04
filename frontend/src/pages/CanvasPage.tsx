@@ -85,6 +85,7 @@ export default function CanvasPage() {
   // Local Undo History Stack
   const [undoStack, setUndoStack] = useState<string[]>([]); // JSON representation of historical project states
   const [syncStatus, setSyncStatus] = useState<"synced" | "saving" | "unsaved">("synced");
+  const [mobilePanel, setMobilePanel] = useState<"palette" | "canvas" | "inspector">("canvas");
 
   // Export popup content
   const [showExportModal, setShowExportModal] = useState(false);
@@ -350,6 +351,7 @@ export default function CanvasPage() {
         ...project,
         nodes: [...project.nodes, createdNode],
       });
+      setMobilePanel("canvas");
       setSelectedNodeId(createdNode.id);
       setSelectedConnectionId(null);
       setSyncStatus("synced");
@@ -602,6 +604,7 @@ export default function CanvasPage() {
       const results: ValidationResult[] = await res.json();
       setValidationResults(results);
       setShowValidationPanel(true);
+      setMobilePanel("inspector");
     } catch (err: any) {
       alert(err.message || "执行校验诊断失败");
     } finally {
@@ -758,27 +761,27 @@ export default function CanvasPage() {
       
       {/* Dynamic Sub-header Navigation Panel */}
       <div
-        className="h-14 border-b flex items-center justify-between px-6 shrink-0"
+        className="min-h-14 border-b flex flex-wrap items-center justify-between gap-2 px-3 py-2 md:px-6 shrink-0"
         style={{
           backgroundColor: designSystem.colors.surfaceContainerLow,
           borderColor: designSystem.colors.borderLight,
         }}
         id="editor-sub-bar"
       >
-        <div className="flex items-center space-x-6" id="editor-sub-bar-left">
+        <div className="flex min-w-0 items-center gap-2 md:gap-6" id="editor-sub-bar-left">
           <Link
             to="/"
             className="flex items-center space-x-2 text-xs font-mono font-bold uppercase tracking-widest hover:text-black text-gray-500"
             id="back-to-list-link"
           >
             <ArrowLeft size={14} />
-            <span>Dashboard</span>
+            <span className="hidden sm:inline">Dashboard</span>
           </Link>
 
           <span className="text-gray-300">|</span>
 
-          <div className="flex items-center space-x-2" id="project-metadata-display">
-            <h2 className="font-courier font-bold text-sm text-black">
+          <div className="flex min-w-0 items-center space-x-2" id="project-metadata-display">
+            <h2 className="max-w-32 truncate font-courier font-bold text-sm text-black sm:max-w-64">
               {project.name}
             </h2>
             <span className="font-mono text-[9px] px-1.5 py-0.5 border text-gray-500 bg-white border-gray-200">
@@ -787,7 +790,7 @@ export default function CanvasPage() {
           </div>
 
           {/* Sync indicator */}
-          <span className="font-mono text-[10px] uppercase text-gray-400 tracking-wider">
+          <span className="hidden font-mono text-[10px] uppercase text-gray-400 tracking-wider sm:inline">
             {syncStatus === "synced" && "● Synced"}
             {syncStatus === "saving" && "◌ Saving..."}
             {syncStatus === "unsaved" && "▲ Unsaved"}
@@ -795,7 +798,7 @@ export default function CanvasPage() {
         </div>
 
         {/* Action controls (Validate, Export, Undo) */}
-        <div className="flex items-center space-x-3" id="editor-sub-bar-right">
+        <div className="flex items-center gap-2 md:gap-3" id="editor-sub-bar-right">
           
           <button
             onClick={handleUndo}
@@ -826,7 +829,7 @@ export default function CanvasPage() {
             ) : (
               <Play size={11} className="text-emerald-400 fill-emerald-400" />
             )}
-            <span>Validate</span>
+            <span className="hidden sm:inline">Validate</span>
           </button>
 
           <div className="relative group" id="export-dropdown-wrapper">
@@ -837,7 +840,7 @@ export default function CanvasPage() {
               id="editor-export-btn"
             >
               <Download size={12} />
-              <span>Export</span>
+              <span className="hidden sm:inline">Export</span>
             </button>
             <div className="absolute right-0 top-full mt-1 hidden group-hover:block bg-white border shadow-lg z-50 py-1 w-32" style={{ borderColor: designSystem.colors.borderDark }}>
               <button
@@ -858,11 +861,26 @@ export default function CanvasPage() {
       </div>
 
       {/* Main Workspace Body: Left Palette + Middle Canvas + Right Drawer */}
-      <div className="flex-1 flex w-full overflow-hidden relative" id="editor-main-columns">
+      <div className="flex-1 flex flex-col w-full overflow-hidden relative md:flex-row" id="editor-main-columns">
+        <div className="grid h-11 shrink-0 grid-cols-3 border-b bg-white md:hidden" id="mobile-editor-tabs">
+          {(["palette", "canvas", "inspector"] as const).map((panel) => (
+            <button
+              key={panel}
+              type="button"
+              onClick={() => setMobilePanel(panel)}
+              className={`border-r px-2 font-mono text-[10px] font-bold uppercase tracking-wider ${
+                mobilePanel === panel ? "bg-purple-50 text-purple-950" : "text-gray-500"
+              }`}
+              id={`mobile-tab-${panel}`}
+            >
+              {panel}
+            </button>
+          ))}
+        </div>
         
         {/* LEFT COLUMN: PALETTE - Click Node template types */}
         <div
-          className="w-64 border-r flex flex-col justify-between shrink-0"
+          className={`${mobilePanel === "palette" ? "flex" : "hidden"} h-full w-full flex-col justify-between overflow-y-auto border-r shrink-0 md:flex md:w-64`}
           style={{
             backgroundColor: designSystem.colors.surfaceContainerLowest,
             borderColor: designSystem.colors.borderLight,
@@ -936,7 +954,7 @@ export default function CanvasPage() {
         {/* MIDDLE COLUMN: THE DESIGN CANVAS */}
         <div
           ref={canvasStageRef}
-          className="flex-1 h-full overflow-hidden bg-grid-dots relative select-none cursor-crosshair no-scrollbar"
+          className={`${mobilePanel === "canvas" ? "block" : "hidden"} flex-1 h-full w-full overflow-hidden bg-grid-dots relative select-none cursor-crosshair no-scrollbar md:block`}
           style={{ backgroundColor: designSystem.colors.surface }}
           onMouseMove={handleCanvasMouseMove}
           onMouseUp={handleCanvasMouseUp}
@@ -1230,7 +1248,7 @@ export default function CanvasPage() {
 
         {/* RIGHT COLUMN: PROPERTY PANEL & VALIDATION DRAWER */}
         <div
-          className="w-80 border-l flex flex-col justify-between shrink-0 bg-white"
+          className={`${mobilePanel === "inspector" ? "flex" : "hidden"} h-full w-full flex-col justify-between overflow-hidden border-l shrink-0 bg-white md:flex md:w-80`}
           style={{ borderColor: designSystem.colors.borderLight }}
           id="editor-right-inspector"
         >

@@ -33,6 +33,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!ready) return <div className="min-h-screen flex items-center justify-center font-mono text-xs">AUTHENTICATING...</div>;
+  if (sessionStorage.getItem("terra-password-recovery") === "true") return <Navigate to="/login" replace />;
   if (!authenticated) return <Navigate to="/login" state={{ from: location }} replace />;
   return <>{children}</>;
 }

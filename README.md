@@ -21,6 +21,7 @@ Terra 是一种可视化架构描述语言。画布中的节点和连线都带�
 - 循环依赖、孤立节点、完整性和协议一致性验证
 - YAML/JSON 导入与导出
 - Supabase Auth、按用户隔离的 PostgreSQL JSONB 持久化和自定义 SMTP 邮件
+- 邮件密码恢复、项目搜索和适配移动端的画布面板切换
 - Vercel 单项目部署：React 静态前端位于 `/`，Flask Serverless API 位于 `/api/*`
 
 YAML 是交换和版本控制格式，不是运行时数据库。生产与本地开发都使用 Supabase 保存项目。

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { designSystem } from "../designSystem";
 import RainbowStrip from "../components/RainbowStrip";
@@ -6,32 +6,63 @@ import { supabase } from "../lib/supabase";
 
 export default function AuthPage() {
   const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(false);
+  const [mode, setMode] = useState<"signIn" | "signUp" | "forgot" | "recovery">(
+    sessionStorage.getItem("terra-password-recovery") === "true" ? "recovery" : "signIn"
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const authRedirectUrl = `${window.location.origin}/`;
+
+  useEffect(() => {
+    if (!supabase) return;
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") {
+        sessionStorage.setItem("terra-password-recovery", "true");
+        setMode("recovery");
+      }
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !password.trim()) {
+    if (!email.trim() && mode !== "recovery") {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!password.trim() && mode !== "forgot") {
       alert("Please enter a valid email and password.");
       return;
     }
 
     if (!supabase) { setError("Supabase Auth 未配置"); return; }
-    setBusy(true); setError("");
-    const result = isSignUp
-      ? await supabase.auth.signUp({
-          email,
-          password,
-          options: { emailRedirectTo: authRedirectUrl },
-        })
+    setBusy(true); setError(""); setMessage("");
+    if (mode === "forgot") {
+      const result = await supabase.auth.resetPasswordForEmail(email, { redirectTo: authRedirectUrl });
+      setBusy(false);
+      if (result.error) { setError(result.error.message); return; }
+      setMessage("密码恢复邮件已发送，请检查邮箱并打开恢复链接。");
+      return;
+    }
+    if (mode === "recovery") {
+      const result = await supabase.auth.updateUser({ password });
+      setBusy(false);
+      if (result.error) { setError(result.error.message); return; }
+      sessionStorage.removeItem("terra-password-recovery");
+      setMessage("密码已更新，正在进入工作区。");
+      navigate("/");
+      return;
+    }
+    const result = mode === "signUp"
+      ? await supabase.auth.signUp({ email, password, options: { emailRedirectTo: authRedirectUrl } })
       : await supabase.auth.signInWithPassword({ email, password });
     setBusy(false);
     if (result.error) { setError(result.error.message); return; }
-    if (isSignUp && !result.data.session) { setError("注册成功，请检查邮箱完成验证"); return; }
+    if (mode === "signUp" && !result.data.session) { setMessage("注册成功，请检查邮箱完成验证"); return; }
     navigate("/");
   };
 
@@ -66,12 +97,12 @@ export default function AuthPage() {
               className="font-mono text-[10px] tracking-[0.2em] uppercase text-gray-400 mt-2 block font-bold"
               id="auth-subtitle"
             >
-              {isSignUp ? "Registration Terminal" : "Authentication Terminal"}
+              {mode === "signUp" ? "Registration Terminal" : mode === "forgot" ? "Password Recovery" : mode === "recovery" ? "Set New Password" : "Authentication Terminal"}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="mt-10 space-y-6" id="auth-form">
-            <div id="auth-form-email">
+            {mode !== "recovery" && <div id="auth-form-email">
               <label
                 className="block font-mono text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2"
               >
@@ -91,9 +122,9 @@ export default function AuthPage() {
                 }}
                 id="input-auth-email"
               />
-            </div>
+            </div>}
 
-            <div id="auth-form-password">
+            {mode !== "forgot" && <div id="auth-form-password">
               <label
                 className="block font-mono text-[10px] font-bold uppercase tracking-widest text-gray-500 mb-2"
               >
@@ -102,7 +133,7 @@ export default function AuthPage() {
               <input
                 type="password"
                 required
-                placeholder="••••••••"
+                placeholder={mode === "recovery" ? "Enter a new secure password" : "••••••••"}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="w-full pb-2 pt-1 font-mono text-sm border-b focus:border-b-purple-900 outline-none transition-colors"
@@ -113,7 +144,7 @@ export default function AuthPage() {
                 }}
                 id="input-auth-password"
               />
-            </div>
+            </div>}
 
             {/* Structured stack-stripe button */}
             <div className="pt-4" id="auth-submit-wrapper">
@@ -126,9 +157,9 @@ export default function AuthPage() {
                   backgroundColor: "#ffffff",
                 }}
                 id="btn-auth-submit"
-                aria-label={isSignUp ? "Sign up" : "Sign in"}
+                aria-label={mode === "signUp" ? "Sign up" : mode === "forgot" ? "Send reset email" : mode === "recovery" ? "Set new password" : "Sign in"}
               >
-                {busy ? "Working..." : isSignUp ? "Sign Up" : "Sign In"}
+                {busy ? "Working..." : mode === "signUp" ? "Sign Up" : mode === "forgot" ? "Send Reset Email" : mode === "recovery" ? "Update Password" : "Sign In"}
                 {/* Embedded rainbow banding strip under the button to replicate exact design */}
                 <div className="absolute left-1 right-1 bottom-1 h-[4px] overflow-hidden">
                   <RainbowStrip height="4px" />
@@ -136,6 +167,7 @@ export default function AuthPage() {
               </button>
             </div>
             {error && <p className="font-mono text-xs text-red-600" role="alert">{error}</p>}
+            {message && <p className="font-mono text-xs text-emerald-700" role="status">{message}</p>}
           </form>
 
           {/* Bottom navigation selectors */}
@@ -144,18 +176,18 @@ export default function AuthPage() {
             id="auth-bottom-links"
           >
             <button
-              onClick={() => alert("Password reset is managed in local session. Please register a new account.")}
+              onClick={() => { setMode(mode === "forgot" ? "signIn" : "forgot"); setError(""); setMessage(""); }}
               className="uppercase tracking-wider hover:text-gray-900 transition-colors"
               id="auth-link-forgot"
             >
-              Forgot Password
+              {mode === "forgot" ? "Back to Sign In" : "Forgot Password"}
             </button>
             <button
-              onClick={() => setIsSignUp(!isSignUp)}
+              onClick={() => { setMode(mode === "signUp" ? "signIn" : "signUp"); setError(""); setMessage(""); }}
               className="uppercase tracking-wider text-purple-800 font-bold hover:text-purple-900 transition-colors"
               id="auth-link-toggle"
             >
-              {isSignUp ? "Sign In" : "Sign Up"}
+              {mode === "signUp" ? "Sign In" : "Sign Up"}
             </button>
           </div>
         </div>

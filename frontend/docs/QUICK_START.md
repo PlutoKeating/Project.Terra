@@ -26,6 +26,8 @@ VITE_SUPABASE_ANON_KEY=your-anon-key
 
 Registration and password recovery use the current browser origin for redirects. Keep the Supabase Site URL and Redirect URLs synchronized with supported local, preview, and production origins.
 
+Password recovery callbacks are detected before HashRouter navigation and redirected to the new-password form. Production acceptance must exercise this through the fixed production domain.
+
 ## Check
 
 ```bash

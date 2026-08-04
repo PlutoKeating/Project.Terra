@@ -11,6 +11,7 @@ export default function HeaderRail() {
   const navigate = useNavigate();
   const [designPath, setDesignPath] = React.useState<string>("/");
   const [profileMenuOpen, setProfileMenuOpen] = React.useState<boolean>(false);
+  const [actionPanel, setActionPanel] = React.useState<"notifications" | "settings" | null>(null);
   const dropdownRef = React.useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -171,6 +172,12 @@ export default function HeaderRail() {
                 color: designSystem.colors.onSurface,
               }}
               id="header-search-input"
+              value={new URLSearchParams(location.search).get("q") || ""}
+              onChange={(event) => {
+                const query = event.target.value;
+                navigate({ pathname: "/", search: query ? `?q=${encodeURIComponent(query)}` : "" });
+              }}
+              aria-label="Search projects"
             />
             <Search
               size={12}
@@ -180,6 +187,7 @@ export default function HeaderRail() {
           </div>
 
           <button
+            onClick={() => setActionPanel(actionPanel === "notifications" ? null : "notifications")}
             className="p-1.5 border transition-colors hover:bg-gray-100"
             style={{
               borderColor: designSystem.colors.borderLight,
@@ -192,6 +200,7 @@ export default function HeaderRail() {
           </button>
 
           <button
+            onClick={() => setActionPanel(actionPanel === "settings" ? null : "settings")}
             className="p-1.5 border transition-colors hover:bg-gray-100"
             style={{
               borderColor: designSystem.colors.borderLight,
@@ -202,6 +211,29 @@ export default function HeaderRail() {
           >
             <Settings size={16} />
           </button>
+
+          {actionPanel && (
+            <div className="absolute right-16 top-16 z-50 w-72 border bg-white p-4 shadow-lg" style={{ borderColor: designSystem.colors.borderDark }} id="header-action-panel">
+              {actionPanel === "notifications" ? (
+                <div id="notifications-panel">
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-gray-500">Notifications</p>
+                  <p className="mt-3 font-mono text-xs text-gray-700">暂无未读通知。生产 API 与当前会话连接正常。</p>
+                </div>
+              ) : (
+                <div id="settings-panel">
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-widest text-gray-500">Workspace Settings</p>
+                  <button
+                    type="button"
+                    className="mt-3 w-full border px-3 py-2 text-left font-mono text-xs hover:bg-gray-50"
+                    onClick={() => { localStorage.removeItem("lastEnteredProjectId"); setDesignPath("/"); setActionPanel(null); }}
+                    id="settings-reset-last-canvas"
+                  >
+                    Reset remembered canvas
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="relative" ref={dropdownRef} id="header-profile-dropdown-container">
             <button

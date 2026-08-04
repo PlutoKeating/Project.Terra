@@ -24,6 +24,7 @@ terra.arr2018.dpdns.org
 - Supabase Auth 管理注册、登录、恢复密码和 session
 - `apiFetch` 自动向 API 附加当前 Bearer token
 - `VITE_API_BASE_URL` 默认 `/api/v1`
+- 窄屏画布使用 Palette / Canvas / Inspector 三个互斥面板，避免固定三栏挤压主画布
 
 ### Serverless API
 
